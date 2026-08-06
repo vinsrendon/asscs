@@ -5,9 +5,9 @@ import Register from './pages/Register.jsx'
 function Navigation(){
   return(
     <div>
-        <nav className="navbar">
-           <NavLink to="/" className={"text-2xl"} end>Home</NavLink>|{" "}
-           <Link to="/register">Register</Link>|{" "}
+        <nav className="navbar text-4xl">
+           <NavLink to="/" className={({ isActive }) => isActive ? "text-blue-600" : ""} end>Home</NavLink>|
+           <NavLink to="/register" className={({ isActive }) => isActive ? "text-blue-600" : ""}>Register</NavLink>|
         </nav>
         <hr />
         <Outlet/>
@@ -20,8 +20,8 @@ function App() {
     <>
       <Routes>
           <Route path="/" element={<Navigation/>}>
-            <Route path="/" element={<Home/>}/>
-            <Route path="/register" element={<Register/>}/>
+            <Route index element={<Home/>}/>
+            <Route path="register" element={<Register/>}/>
           </Route>
       </Routes>
     </>    
