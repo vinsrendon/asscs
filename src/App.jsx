@@ -1,6 +1,6 @@
 import { Routes, Route, Link, Outlet, NavLink } from 'react-router'
-import Home from './pages/Home.jsx'
-import Register from './pages/Register.jsx'
+import Home from './pages/Home'
+// import Register from './pages/Register'
 
 function Navigation(){
   return(
@@ -19,10 +19,7 @@ function App() {
   return (
     <>
       <Routes>
-          <Route path="/" element={<Navigation/>}>
-            <Route index element={<Home/>}/>
-            <Route path="register" element={<Register/>}/>
-          </Route>
+          <Route path="/" element={<Home/>} />
       </Routes>
     </>    
   )
