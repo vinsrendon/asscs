@@ -26,7 +26,7 @@ function Home(){
                                 <input className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" required placeholder="email@edu.ph" type="email"/>
                             </div>
                             <div className="space-y-1.5">
-                                <label htmlFor="email" className="text-sm font-semibold text-foreground">passwordd</label>
+                                <label htmlFor="email" className="text-sm font-semibold text-foreground">Password</label>
                                 <input className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary    transition-all text-sm" required placeholder="••••••••" type="password"/>
                             </div>
                             <button className="w-full group flex items-center justify-center gap-2 px-6 py-3.5 mt-2 rounded-xl font-semibold bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-200" type="submit">Sign In<img src={arrow} alt="right arrow" /></button>
