@@ -1,3 +1,4 @@
+import { NavLink } from 'react-router'
 import arrow from '../assets/arrow-right-stroke.svg'
 import scan from '../assets/scan.svg'
 
@@ -32,14 +33,13 @@ function Home(){
                             <button className="w-full group flex items-center justify-center gap-2 px-6 py-3.5 mt-2 rounded-xl font-semibold bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-200" type="submit">Sign In<img src={arrow} alt="right arrow" /></button>
                         </form>
                         <p className='mt-7 text-center text-sm text-muted-foreground'>
-                            Don't have an account?
-                            <button className='font-semibold text-primary hover:underline'>Create account</button>
+                            Don't have an account? 
+                            <NavLink to="/register" className='font-semibold text-primary hover:underline'> Create account</NavLink>
                         </p>
                     </div>
                 </div>          
             </section>
             <section className="hidden lg:block relative flex-1 bg-blue-950 overflow-hidden">
-                {/* <div className='absolute inset-0 bg-linear-to-tr from-primary/80 to-transparent mix-blend-multiply z-10'></div> */}
                 <div className='absolute inset-0 z-20 flex flex-col items-center justify-center p-12 text-center text-white'>
                     <div className='bg-white/10 backdrop-blur-sm border border-white/20 p-8 rounded-3xl max-w-lg'>
                         <h3 className='text-3xl font-bold mb-4'>Automate your entrance exam workflow</h3>
