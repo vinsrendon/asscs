@@ -2,6 +2,7 @@ import { NavLink } from 'react-router'
 import arrow from '../assets/arrow-right-stroke.svg'
 import scan from '../assets/scan.svg'
 import user from '../assets/user.svg'
+import sheet from '../assets/sheet.webp'
 
 function TeacherRegisration(){
     return(        
@@ -35,28 +36,28 @@ function TeacherRegisration(){
                         <form className="space-y-1">
                             <div className="grid grid-cols-2 gap-3">
                                 <div className='space-y-1.5'>
-                                    <label class="text-sm font-semibold text-foreground">First Name</label>
-                                    <input required class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="Juan" type="text"></input>
+                                    <label className="text-sm font-semibold text-foreground">First Name</label>
+                                    <input required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="Juan" type="text"></input>
                                 </div>
                                 <div className='space-y-1.5'>
-                                    <label class="text-sm font-semibold text-foreground">
+                                    <label className="text-sm font-semibold text-foreground">
                                         Middle Name 
                                         <span className='text-muted-foreground font-normal'> (Optional)</span>
                                     </label>
-                                    <input class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="Santos" type="text"></input>
+                                    <input className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="Santos" type="text"></input>
                                 </div>                                
                             </div>
                             <div className='space-y-1.5'>
-                                <label class="text-sm font-semibold text-foreground">Last Name</label>
-                                <input required class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="Dela Cruz" type="text"></input>
+                                <label className="text-sm font-semibold text-foreground">Last Name</label>
+                                <input required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="Dela Cruz" type="text"></input>
                             </div>
                             <div className='space-y-1.5'>
-                                <label class="text-sm font-semibold text-foreground">Email Address</label>
-                                <input required class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="you@school.edu" type="email"></input>
+                                <label className="text-sm font-semibold text-foreground">Email Address</label>
+                                <input required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="you@school.edu" type="email"></input>
                             </div>
                             <div className='space-y-1.5'>
-                                <label class="text-sm font-semibold text-foreground">Password</label>
-                                <input required minlength="6" class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="Min. 6 characters" type="password"></input>
+                                <label className="text-sm font-semibold text-foreground">Password</label>
+                                <input required minlength="6" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="Min. 6 characters" type="password"></input>
                             </div>
                             <button className="w-full group flex items-center justify-center gap-2 px-6 py-3.5 mt-2 rounded-xl font-semibold bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-200" type="submit">
                             Submit Registration <img src={arrow} alt="right arrow" />
@@ -69,13 +70,16 @@ function TeacherRegisration(){
                     </div>
                 </div>          
             </section>
-            <section className="hidden lg:block relative flex-1 bg-blue-950 overflow-hidden">
+            <section className="hidden lg:block relative flex-1 bg-slate-900 overflow-hidden">                       
+                <div className="absolute inset-0 bg-linear-to-tr from-primary/80 to-transparent mix-blend-multiply z-10"></div>    
+                <img className='absolute inset-0 w-full h-full object-cover opacity-80' src={sheet}/>        
+                                    
                 <div className='absolute inset-0 z-20 flex flex-col items-center justify-center p-12 text-center text-white'>
                     <div className='bg-white/10 backdrop-blur-sm border border-white/20 p-8 rounded-3xl max-w-lg'>
                         <h3 className='text-3xl font-bold mb-4'>Automate your entrance exam workflow</h3>
                         <p className='text-slate-300 text-lg leading-relaxed'>Instantly scan, grade, and analyze multiple-choice answer sheets with our AI-powered system. Save hours of manual checking.</p>
                     </div>
-                </div>
+                </div> 
             </section>
         </main>
     )

@@ -2,6 +2,7 @@ import { NavLink } from 'react-router'
 import arrow from '../assets/arrow-right-stroke.svg'
 import scan from '../assets/scan.svg'
 import hat from '../assets/hat.svg'
+import sheet from '../assets/sheet.webp'
 
 function StudentRegistration(){
     return(        
@@ -80,13 +81,16 @@ function StudentRegistration(){
                     </div>
                 </div>          
             </section>
-            <section className="hidden lg:block relative flex-1 bg-blue-950 overflow-hidden">
+            <section className="hidden lg:block relative flex-1 bg-slate-900 overflow-hidden">                       
+                <div className="absolute inset-0 bg-linear-to-tr from-primary/80 to-transparent mix-blend-multiply z-10"></div>    
+                <img className='absolute inset-0 w-full h-full object-cover opacity-80' src={sheet}/>        
+                                    
                 <div className='absolute inset-0 z-20 flex flex-col items-center justify-center p-12 text-center text-white'>
                     <div className='bg-white/10 backdrop-blur-sm border border-white/20 p-8 rounded-3xl max-w-lg'>
                         <h3 className='text-3xl font-bold mb-4'>Automate your entrance exam workflow</h3>
                         <p className='text-slate-300 text-lg leading-relaxed'>Instantly scan, grade, and analyze multiple-choice answer sheets with our AI-powered system. Save hours of manual checking.</p>
                     </div>
-                </div>
+                </div> 
             </section>
         </main>
     )
