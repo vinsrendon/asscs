@@ -9,7 +9,7 @@ function StudentRegistration(){
         <main className="min-h-screen w-full flex">     
             <section className="w-full lg:w-120 flex flex-col justify-center px-8 sm:px-16 bg-background relative z-10 overflow-y-auto py-10">
                 <div className="w-full max-w-sm mx-auto">
-                    <div className="flex items-center gap-3 mb-10">
+                    <div className="flex items-center gap-3 mb-5">
                         <div className='bg-primary p-3 rounded-4xl shadow-lg shadow-primary/30'>
                             <img src={scan} alt="scan icon" />
                         </div>   
@@ -19,13 +19,13 @@ function StudentRegistration(){
                         </div>     
                     </div>
                     <div>
-                        <div className='mb-7'>
-                            <NavLink to="/register" className="w-fit flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-7">
+                        <div className='mb-2'>
+                            <NavLink to="/register" className="w-fit flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
                                 <img src={arrow} alt="" className="invert opacity-70 rotate-180"/>
                                 Back
                             </NavLink>
                         </div>
-                        <div className="mb-7">
+                        <div className="mb-2">
                             <div className='flex items-center gap-2 mb-1'>
                                 <img src={hat} alt="hat icon"/>
                                 <span className='text-xs font-semibold uppercase tracking-widest text-primary'>APPLICANT REGISTRATION</span>
@@ -74,7 +74,7 @@ function StudentRegistration(){
                             Submit Registration <img src={arrow} alt="right arrow" />
                             </button>
                         </form>
-                        <p className='mt-7 text-center text-sm text-muted-foreground'>
+                        <p className='mt-2 text-center text-sm text-muted-foreground'>
                             Already have an account?
                             <NavLink to="/" className='font-semibold text-primary hover:underline'> Sign In</NavLink>
                         </p>
