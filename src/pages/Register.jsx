@@ -2,6 +2,7 @@ import { NavLink } from 'react-router'
 import hat from '../assets/hat.svg'
 import user from '../assets/user.svg'
 import scan from '../assets/scan.svg'
+
 function Register(){
     return(
         <main className="min-h-screen w-full flex">            
@@ -18,30 +19,27 @@ function Register(){
                     </div>
                     <div>
                         <div className="mb-7">
-                            <NavLink to="/" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-7"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left w-4 h-4" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg> Back to sign in</NavLink>
+                            <h2 className="text-3xl font-bold text-foreground mb-1">Create account</h2>
+                            <p className="text-muted-foreground text-sm">Who are you registering as?</p>
                         </div>
-                        <div class="mb-7">
-                            <h2 class="text-3xl font-bold text-foreground mb-1">Create account</h2>
-                            <p class="text-muted-foreground text-sm">Who are you registering as?</p>
-                        </div>
-                        <div class="space-y-3">
-                            <NavLink className="w-full flex items-center gap-4 p-5 rounded-2xl border-2 border-slate-200 hover:border-primary hover:bg-primary/5 transition-all group">
-                                <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center group-hover:bg-primary/20 transition-colors shrink-0">
+                        <div className="space-y-3">
+                            <NavLink to="/teacherregistration" className="w-full flex items-center gap-4 p-5 rounded-2xl border-2 border-slate-200 hover:border-primary hover:bg-primary/5 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 duration-200">
+                                <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center group-hover:bg-primary/20 transition-colors shrink-0">
                                     <img src={user} alt="user icon" className='text-blue-500'/>
                                 </div>
-                                <div class="text-left">
-                                    <p class="font-semibold text-foreground">Teacher</p>
-                                    <p class="text-xs text-muted-foreground">Manage exams, scan sheets, and view results</p>
+                                <div className="text-left">
+                                    <p className="font-semibold text-foreground">Teacher</p>
+                                    <p className="text-xs text-muted-foreground">Manage exams, scan sheets, and view results</p>
                                 </div>
-                            </NavLink>
+                            </NavLink>                           
                             
-                            <NavLink className="w-full flex items-center gap-4 p-5 rounded-2xl border-2 border-slate-200 hover:border-primary hover:bg-primary/5 transition-all group">
-                                <div class="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center group-hover:bg-primary/20 transition-colors shrink-0">
+                            <NavLink to="/studdentregistration" className="w-full flex items-center gap-4 p-5 rounded-2xl border-2 border-slate-200 hover:border-primary hover:bg-primary/5 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 duration-200">
+                                <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center group-hover:bg-primary/20 transition-colors shrink-0">
                                     <img src={hat} alt="scan icon" />
                                 </div>
-                                <div class="text-left">
-                                    <p class="font-semibold text-foreground">Applicant</p>
-                                    <p class="text-xs text-muted-foreground">Register for entrance exam and view your scores</p>
+                                <div className="text-left">
+                                    <p className="font-semibold text-foreground">Applicant</p>
+                                    <p className="text-xs text-muted-foreground">Register for entrance exam and view your scores</p>
                                 </div>
                             </NavLink>
                         </div>
