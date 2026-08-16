@@ -5,20 +5,8 @@ import Register from './pages/Register'
 import StudentRegistration from './pages/StudentRegistration'
 import TeacherRegisration from './pages/TeacherRegisration'
 import AdminDashboard from './pages/admin/AdminDashboard'
+import AdminAccounts from './pages/admin/AdminAccounts'
 import RouteGuard from './pages/RouteGuard'
- 
-// function Navigation(){
-//   return(
-//     <div>
-//         <nav className="navbar text-4xl">
-//            <NavLink to="/" className={({ isActive }) => isActive ? "text-blue-600" : ""} end>Home</NavLink>|
-//            <NavLink to="/register" className={({ isActive }) => isActive ? "text-blue-600" : ""}>Register</NavLink>|
-//         </nav>
-//         <hr />
-//         <Outlet/>
-//     </div>
-//   )
-// }
 
 function App() {
   return (
@@ -28,7 +16,14 @@ function App() {
           <Route path="/register" element={<Register/>} />          
           <Route path="/studdentregistration" element={<StudentRegistration/>} />          
           <Route path="/teacherregistration" element={<TeacherRegisration/>} />          
-          <Route path="/admindash" element={<RouteGuard allowedRoles={["ADMIN"]}><AdminDashboard/></RouteGuard>} />          
+          <Route path="/admindash" element={
+            <RouteGuard allowedRoles={["ADMIN"]}>
+              <AdminDashboard/>       
+            </RouteGuard>} />          
+          <Route path="/adminaccounts" element={
+            <RouteGuard allowedRoles={["ADMIN"]}>
+              <AdminAccounts/>              
+            </RouteGuard>} />          
       </Routes>
     </>    
   )
