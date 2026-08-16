@@ -1,4 +1,4 @@
-import {NavLink } from 'react-router'
+import {NavLink, useNavigate } from 'react-router'
 import scan from '../../assets/scan.svg'
 import dashboard from '../../assets/dashboard.svg'
 import usersquare from '../../assets/user-square.svg'
@@ -9,6 +9,8 @@ import Swal from 'sweetalert2'
 function AdminNav(){
     const [name, setName] = useState('')
     const [role, setRole] = useState('')
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         const getUserInfo = async()=>{  
@@ -38,6 +40,24 @@ function AdminNav(){
         getUserInfo()
     }, [])
 
+    const logout = async()=>{  
+        await axios.post("/logout").then((res)=>{    
+            if(res.status === 200){
+            navigate('/')
+            localStorage.removeItem('role');
+            localStorage.removeItem('name');
+            }
+        }).catch((error)=>{
+            console.log(error);
+            
+            Swal.fire({
+                text:"UNEXPECTED ERROR OCCURED, CHECK LOGS FOR MORE INFO",
+                icon:"error"
+            }); 
+            console.log(error);
+        });    
+    }
+
     return(
     <>
         <aside className="hidden md:flex md:flex-col w-50 text-white h-full">
@@ -64,12 +84,12 @@ function AdminNav(){
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="5"></circle><path d="M20 21a8 8 0 0 0-16 0"></path></svg>
                         </div>   
                         <div>
-                            <h1 className='font-bold text-2xl leading-none'>{name}</h1>
+                            <h1 className='font-bold text-lg leading-none'>{name}</h1>
                             <p className='text-xs'>{role}</p>
                         </div>     
                     </div>
                 </div>
-                <NavLink to="/" className="text-left py-2 px-13 rounded-2xl w-full text-2xl font-bold bg-[#12264F]">Sign out</NavLink>
+                <NavLink to="#" onClick={logout} className="text-left py-2 px-13 rounded-2xl w-full text-2xl font-bold bg-[#12264F]">Sign out</NavLink>
             </div>
         </aside>
         <button className="md:hidden flex items-center text-white focus:outline-none">

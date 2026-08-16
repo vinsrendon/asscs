@@ -1,5 +1,4 @@
 import { Routes, Route} from 'react-router'
-// import { Routes, Route, Link, Outlet, NavLink } from 'react-router'
 import Home from './pages/Home'
 import Register from './pages/Register'
 import StudentRegistration from './pages/StudentRegistration'
@@ -7,6 +6,7 @@ import TeacherRegisration from './pages/TeacherRegisration'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminAccounts from './pages/admin/AdminAccounts'
 import RouteGuard from './pages/RouteGuard'
+import StudentDashboard from './pages/student/StudentDashboard'
 
 function App() {
   return (
@@ -15,7 +15,8 @@ function App() {
           <Route path="/" element={<Home/>} viewTransition/>
           <Route path="/register" element={<Register/>} />          
           <Route path="/studdentregistration" element={<StudentRegistration/>} />          
-          <Route path="/teacherregistration" element={<TeacherRegisration/>} />          
+          <Route path="/teacherregistration" element={<TeacherRegisration/>} />   
+
           <Route path="/admindash" element={
             <RouteGuard allowedRoles={["ADMIN"]}>
               <AdminDashboard/>       
@@ -23,7 +24,12 @@ function App() {
           <Route path="/adminaccounts" element={
             <RouteGuard allowedRoles={["ADMIN"]}>
               <AdminAccounts/>              
-            </RouteGuard>} />          
+            </RouteGuard>} />         
+
+          <Route path="/studentdash" element={
+            <RouteGuard allowedRoles={["STUDENT"]}>
+              <StudentDashboard/>              
+            </RouteGuard>} />      
       </Routes>
     </>    
   )

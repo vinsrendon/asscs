@@ -33,7 +33,7 @@ function Home(){
                     return
 
                     case "STUDENT":
-                    return
+                    return navigate('/studentdash')
 
                     default:
                     return navigate('/')
