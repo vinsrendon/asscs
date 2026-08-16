@@ -30,7 +30,7 @@ function Home(){
                     return navigate('/admindash')
 
                     case "TEACHER":
-                    return
+                    return navigate('/teacherdash')
 
                     case "STUDENT":
                     return navigate('/studentdash')

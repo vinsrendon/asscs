@@ -7,6 +7,7 @@ import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminAccounts from './pages/admin/AdminAccounts'
 import RouteGuard from './pages/RouteGuard'
 import StudentDashboard from './pages/student/StudentDashboard'
+import TeacherDashboard from './pages/teacher/TeacherDashboard'
 
 function App() {
   return (
@@ -30,6 +31,11 @@ function App() {
             <RouteGuard allowedRoles={["STUDENT"]}>
               <StudentDashboard/>              
             </RouteGuard>} />      
+          
+          <Route path="/teacherdash" element={
+            <RouteGuard allowedRoles={["TEACHER"]}>
+              <TeacherDashboard/>              
+            </RouteGuard>} />  
       </Routes>
     </>    
   )

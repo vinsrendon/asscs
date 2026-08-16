@@ -1,5 +1,8 @@
 import {NavLink,useNavigate} from 'react-router'
 import scan from '../../assets/scan.svg'
+import paper from '../../assets/file-detail.svg'
+import chart from '../../assets/chart-line.svg'
+import robot from '../../assets/robot.svg'
 import dashboard from '../../assets/dashboard.svg'
 import axios from '../../../axios-config.js'
 import { useState, useEffect} from 'react'
@@ -70,7 +73,10 @@ function StudentNav(){
                 </div>     
             </div>
             <div className='flex flex-col gap-3'>
-                <NavLink to="/studentdash" className={({ isActive }) => isActive ? "flex flex-nowrap bg-blue-600 py-2 px-6 rounded-xl w-full text-2xl gap-2" : "flex flex-nowrap hover:bg-blue-600 py-2 px-6 rounded-xl w-full text-2xl gap-2"} end><img className='invert' src={dashboard}/>Dashboard</NavLink>
+                <NavLink to="/studentdash" className={({ isActive }) => isActive ? "flex flex-nowrap bg-blue-600 py-2 px-6 rounded-xl w-full text-lg gap-2" : "flex flex-nowrap hover:bg-blue-600 py-2 px-6 rounded-xl w-full text-lg gap-2"} end><img className='invert' src={dashboard}/>Dashboard</NavLink>
+                <NavLink to="/studentresult" className={({ isActive }) => isActive ? "flex flex-nowrap bg-blue-600 py-2 px-6 rounded-xl w-full text-lg gap-2" : "flex flex-nowrap hover:bg-blue-600 py-2 px-6 rounded-xl w-full text-lg gap-2"} end><img className='invert' src={paper}/>My Results</NavLink>
+                <NavLink to="/studentperf" className={({ isActive }) => isActive ? "flex flex-nowrap bg-blue-600 py-2 px-6 rounded-xl w-full text-lg gap-2" : "flex flex-nowrap hover:bg-blue-600 py-2 px-6 rounded-xl w-full text-lg gap-2"} end><img className='invert' src={chart}/>Performance</NavLink>
+                <NavLink to="/studentchat" className={({ isActive }) => isActive ? "flex flex-nowrap bg-blue-600 py-2 px-6 rounded-xl w-full text-lg gap-2" : "flex flex-nowrap hover:bg-blue-600 py-2 px-6 rounded-xl w-full text-lg gap-2"} end><img className='invert' src={robot}/>AI Assistant</NavLink>
             </div>
             
             <div className="mt-auto space-y-2">
