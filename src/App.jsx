@@ -14,6 +14,10 @@ import StudentChat from './pages/student/StudentChat'
 import StudentLayout from './pages/student/StudentLayout'
 import TeacherLayout from './pages/teacher/TeacherLayout'
 import AdminLayout from './pages/admin/AdminLayout'
+import TeacherScan from './pages/teacher/TeacherScan'
+import TeacherAnswerKeys from './pages/teacher/TeacherAnswerKeys'
+import TeacherStudents from './pages/teacher/TeacherStudents'
+import TeacherResult from './pages/teacher/TeacherResult'
 
 function App() {
   return (
@@ -24,14 +28,6 @@ function App() {
           <Route path="/studdentregistration" element={<StudentRegistration/>} />          
           <Route path="/teacherregistration" element={<TeacherRegisration/>} />   
 
-          {/* <Route path="/admindash" element={
-            <RouteGuard allowedRoles={["ADMIN"]}>
-              <AdminDashboard/>       
-            </RouteGuard>} />          
-          <Route path="/adminaccounts" element={
-            <RouteGuard allowedRoles={["ADMIN"]}>
-              <AdminAccounts/>              
-            </RouteGuard>} />     */}
           <Route path="/admin" element={<RouteGuard allowedRoles={["ADMIN"]} ><AdminLayout /></RouteGuard>}>            
               <Route index element={<AdminDashboard />} />
               <Route path="accounts" element={<AdminAccounts />} />        
@@ -45,7 +41,11 @@ function App() {
           </Route>
 
           <Route path="/teacher" element={<RouteGuard allowedRoles={["TEACHER"]} ><TeacherLayout /></RouteGuard>}>            
-              <Route index element={<TeacherDashboard />} />        
+              <Route index element={<TeacherDashboard />} />   
+              <Route path="scan" element={<TeacherScan />} />     
+              <Route path="keys" element={<TeacherAnswerKeys />} />     
+              <Route path="students" element={<TeacherStudents />} />     
+              <Route path="results" element={<TeacherResult />} />     
           </Route>
       </Routes>
     </>    
