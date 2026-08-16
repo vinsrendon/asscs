@@ -1,66 +1,53 @@
-import { NavLink } from 'react-router'
-import hat from '../../assets/hat.svg'
-import user from '../../assets/user.svg'
-import scan from '../../assets/scan.svg'
-import sheet from '../../assets/sheet.webp'
+import AdminNav from './AdminNav'
+import { useState } from 'react'
 
 function AdminDashboard(){
+    const [search, setSearch] = useState('')
+    const [selected, setSelected] = useState('all')
+
+    const options = [
+        { value: 'all', label: 'All' },
+        { value: 'teachers', label: 'Teachers' },
+        { value: 'students', label: 'Students' },
+    ]
+
     return(
         <main className="min-h-screen w-full flex">            
-            <section className="w-full lg:w-120 flex flex-col justify-center px-8 sm:px-16 bg-background relative z-10 overflow-y-auto py-10">
-                <div className="w-full max-w-sm mx-auto">
-                    <div className="flex items-center gap-3 mb-10">
-                        <div className='bg-primary p-3 rounded-4xl shadow-lg shadow-primary/30'>
-                            <img src={scan} alt="scan icon" />
-                        </div>   
-                        <div>
-                            <h1 className='font-bold text-2xl text-foreground leading-none'>AutoCheck</h1>
-                            <p className='text-sm font-semibold text-primary'>Academic System</p>
-                        </div>     
+            <section className="absolute content-start md:static max-md:w-20 max-md:bg-[#111629]/0 bg-[#111629] p-5 z-999">
+                <AdminNav/>
+            </section>
+            <section className="flex-1 bg-white p-5">  
+                <div className='flex justify-between max-md:mt-10'>
+                    <div>
+                    <h2 className='text-2xl font-bold'>Account Management</h2>
+                    <p className='text-muted-foreground'>Manage Teacher and student accounts</p>
                     </div>
                     <div>
-                        <div className="mb-7">
-                            <h2 className="text-3xl font-bold text-foreground mb-1">Create account</h2>
-                            <p className="text-muted-foreground text-sm">Who are you registering as?</p>
-                        </div>
-                        <div className="space-y-3">
-                            <NavLink to="/teacherregistration" className="w-full flex items-center gap-4 p-5 rounded-2xl border-2 border-slate-200 hover:border-primary hover:bg-primary/5 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 duration-200">
-                                <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center group-hover:bg-primary/20 transition-colors shrink-0">
-                                    <img src={user} alt="user icon" className='text-blue-500'/>
-                                </div>
-                                <div className="text-left">
-                                    <p className="font-semibold text-foreground">Teacher</p>
-                                    <p className="text-xs text-muted-foreground">Manage exams, scan sheets, and view results</p>
-                                </div>
-                            </NavLink>                           
-                            
-                            <NavLink to="/studdentregistration" className="w-full flex items-center gap-4 p-5 rounded-2xl border-2 border-slate-200 hover:border-primary hover:bg-primary/5 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 duration-200">
-                                <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center group-hover:bg-primary/20 transition-colors shrink-0">
-                                    <img src={hat} alt="scan icon" />
-                                </div>
-                                <div className="text-left">
-                                    <p className="font-semibold text-foreground">Applicant</p>
-                                    <p className="text-xs text-muted-foreground">Register for entrance exam and view your scores</p>
-                                </div>
-                            </NavLink>
-                        </div>
-                        <p className='mt-7 text-center text-sm text-muted-foreground'>
-                            Already have an account?
-                            <NavLink to="/" className='font-semibold text-primary hover:underline'> Sign In</NavLink>
-                        </p>
+                        <button className='px-3 py-2 text-white rounded-2xl bg-blue-500 hover:bg-blue-400 font-semibold'>+ Add Account</button>
                     </div>
-                </div>          
-            </section>
-            <section className="flex-1 bg-slate-900 overflow-hidden">                       
-                <div className="absolute inset-0 bg-linear-to-tr from-primary/80 to-transparent mix-blend-multiply z-10"></div>    
-                <img className='absolute inset-0 w-full h-full object-cover opacity-80' src={sheet}/>        
-                                    
-                <div className='absolute inset-0 z-20 flex flex-col items-center justify-center p-12 text-center text-white'>
-                    <div className='bg-white/10 backdrop-blur-sm border border-white/20 p-8 rounded-3xl max-w-lg'>
-                        <h3 className='text-3xl font-bold mb-4'>Automate your entrance exam workflow</h3>
-                        <p className='text-slate-300 text-lg leading-relaxed'>Instantly scan, grade, and analyze multiple-choice answer sheets with our AI-powered system. Save hours of manual checking.</p>
+                </div>
+                <div className='mt-5 flex max-md:flex-col justify-between gap-1'>
+                    <input className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" required placeholder="Seach by name, emaikl, or student ID..." type="text" value={search} onChange={(e) => setSearch(e.target.value)}/>
+
+                    <div className="flex gap-2">
+                        {options.map((opt) => (
+                            <label key={opt.value} className="cursor-pointer">
+                            <input type="radio" name="option" value={opt.value} checked={selected === opt.value} onChange={() => setSelected(opt.value)} className="sr-only"/>
+                            <span
+                                className={`
+                                inline-block px-4 py-2.5 rounded-xl border-2 font-medium transition-all
+                                ${selected === opt.value
+                                    ? 'bg-primary text-white border-primary shadow-lg shadow-primary/25'
+                                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-primary/50'
+                                }
+                                `}
+                            >
+                                {opt.label}
+                            </span>
+                            </label>
+                        ))}
                     </div>
-                </div> 
+                </div>
             </section>
         </main>
     )

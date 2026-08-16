@@ -1,27 +1,34 @@
+import {NavLink } from 'react-router'
+import scan from '../../assets/scan.svg'
+
 function AdminNav(){
     return(
-        <>
-            <aside className="hidden md:block w-48 bg-nav text-white h-full">
-                <ul className="space-y-2">
-                    <li>test</li>
-                    <li>test</li>
-                </ul>
-            </aside>
-            <button class="md:hidden flex items-center text-white focus:outline-none pl-2">
-                <svg class="w-7 h-7 my-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
-                <path stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
-                </svg>
-            </button>
+    <>
+        <aside className="hidden md:block w-50 text-white h-full">
+            <div className="flex items-center gap-3 mb-10">
+                <div className='text-white bg-[#12264F] p-2 rounded-2xl'>
+                    <img src={scan} alt="scan icon"/>
+                </div>   
+                <div>
+                    <h1 className='font-bold text-2xl leading-none'>AutoCheck</h1>
+                    <p className='text-xs'>Shading Sheet Checker</p>
+                </div>     
+            </div>
             
-            <aside id="mobileMenu" class="absolute hidden w-full bg-nav text-white">
-            <h2 class="text-4xl font-bold mt-4 text-center text-primary">StockEZ</h2>
-            <clock/>
-            <h2 class="text-2xl font-bold mb-4 p-2 text-primary text-center">{{name}}</h2>
-            <ul class="space-y-2 text-center">
-                
-            </ul>
-            </aside>
-        </>
+            <NavLink to="/admindash" className={({ isActive }) => isActive ? " text-left bg-blue-600 py-2 px-10 rounded-2xl w-full text-2xl" : "text-4xl"} end>Accounts</NavLink>
+        </aside>
+        <button className="md:hidden flex items-center text-white focus:outline-none">
+            <svg className="w-7 h-7" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
+            <path stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
+            </svg>
+        </button>
+        
+        <aside id="mobileMenu" className="absolute hidden w-full bg-nav text-white">
+        <ul className="space-y-2 text-center">
+            
+        </ul>
+        </aside>
+    </>
     )
 }
 
