@@ -27,13 +27,13 @@ function Home(){
             if(res.status === 200){             
                 switch (res.data.role) {
                     case "ADMIN":
-                    return navigate('/admindash')
+                    return navigate('/admin')
 
                     case "TEACHER":
-                    return navigate('/teacherdash')
+                    return navigate('/teacher')
 
                     case "STUDENT":
-                    return navigate('/studentdash')
+                    return navigate('/student')
 
                     default:
                     return navigate('/')

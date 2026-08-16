@@ -22,20 +22,19 @@ function StudentNav(){
             } 
             else {
                 axios.get('/verify',{}).then((res)=>{
-                    console.log(res)
-                    
+                                    
                 localStorage.setItem('name',res.data.user.name)  
                 localStorage.setItem('role',res.data.user.role)  
                 
                 setName(localStorage.getItem('name').toUpperCase())  
                 setRole(localStorage.getItem('role').toUpperCase())
                 }).catch((err)=>{  
-                Swal.fire({
-                    title:"UNEXPECTED ERROR OCCURED, CHECK LOGS FOR MORE INFO",
-                    text:err,
-                    icon:"error"
-                })
-                console.log(err)
+                    Swal.fire({
+                        title:"UNEXPECTED ERROR OCCURED, CHECK LOGS FOR MORE INFO",
+                        text:err,
+                        icon:"error"
+                    })
+                    console.log(err)
                 })
             }
         }

@@ -22,7 +22,6 @@ function TeacherNav(){
             } 
             else {
                 axios.get('/verify',{}).then((res)=>{
-                    console.log(res)
                     
                 localStorage.setItem('name',res.data.user.name)  
                 localStorage.setItem('role',res.data.user.role)  
@@ -30,12 +29,12 @@ function TeacherNav(){
                 setName(localStorage.getItem('name').toUpperCase())  
                 setRole(localStorage.getItem('role').toUpperCase())
                 }).catch((err)=>{  
-                Swal.fire({
-                    title:"UNEXPECTED ERROR OCCURED, CHECK LOGS FOR MORE INFO",
-                    text:err,
-                    icon:"error"
-                })
-                console.log(err)
+                    Swal.fire({
+                        title:"UNEXPECTED ERROR OCCURED, CHECK LOGS FOR MORE INFO",
+                        text:err,
+                        icon:"error"
+                    })
+                    console.log(err)
                 })
             }
         }
@@ -73,7 +72,7 @@ function TeacherNav(){
                 </div>     
             </div>
             <div className='flex flex-col gap-3'>
-                <NavLink to="/teacherdash" className={({ isActive }) => isActive ? "flex flex-nowrap bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2" : "flex flex-nowrap hover:bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2"} end><img className='invert' src={dashboard}/>Dashboard</NavLink>
+                <NavLink to="/teacher" className={({ isActive }) => isActive ? "flex flex-nowrap bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2" : "flex flex-nowrap hover:bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2"} end><img className='invert' src={dashboard}/>Dashboard</NavLink>
                 <NavLink to="/teacherscan" className={({ isActive }) => isActive ? "flex flex-nowrap bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2" : "flex flex-nowrap hover:bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2"} end><img src={scan}/>Scan Sheet</NavLink>
                 <NavLink to="/teacherkeys" className={({ isActive }) => isActive ? "flex flex-nowrap bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2" : "flex flex-nowrap hover:bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2"} end><img className='invert' src={key}/>Answer Keys</NavLink>
                 <NavLink to="/teacherstudents" className={({ isActive }) => isActive ? "flex flex-nowrap bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2" : "flex flex-nowrap hover:bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2"} end><img className='invert' src={students}/>Students</NavLink>

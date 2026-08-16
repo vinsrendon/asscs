@@ -12,6 +12,8 @@ import StudentResults from './pages/student/StudentResults'
 import StudentPerformance from './pages/student/StudentPerformance'
 import StudentChat from './pages/student/StudentChat'
 import StudentLayout from './pages/student/StudentLayout'
+import TeacherLayout from './pages/teacher/TeacherLayout'
+import AdminLayout from './pages/admin/AdminLayout'
 
 function App() {
   return (
@@ -22,20 +24,28 @@ function App() {
           <Route path="/studdentregistration" element={<StudentRegistration/>} />          
           <Route path="/teacherregistration" element={<TeacherRegisration/>} />   
 
-          <Route path="/admindash" element={
+          {/* <Route path="/admindash" element={
             <RouteGuard allowedRoles={["ADMIN"]}>
               <AdminDashboard/>       
             </RouteGuard>} />          
           <Route path="/adminaccounts" element={
             <RouteGuard allowedRoles={["ADMIN"]}>
               <AdminAccounts/>              
-            </RouteGuard>} />    
-            
+            </RouteGuard>} />     */}
+          <Route path="/admin" element={<RouteGuard allowedRoles={["ADMIN"]} ><AdminLayout /></RouteGuard>}>            
+              <Route index element={<AdminDashboard />} />
+              <Route path="accounts" element={<AdminAccounts />} />        
+          </Route>
+
           <Route path="/student" element={<RouteGuard allowedRoles={["STUDENT"]} ><StudentLayout /></RouteGuard>}>            
               <Route index element={<StudentDashboard />} />
               <Route path="results" element={<StudentResults />} />
               <Route path="performance" element={<StudentPerformance />} />
               <Route path="assistant" element={<StudentChat />} />         
+          </Route>
+
+          <Route path="/teacher" element={<RouteGuard allowedRoles={["TEACHER"]} ><TeacherLayout /></RouteGuard>}>            
+              <Route index element={<TeacherDashboard />} />        
           </Route>
       </Routes>
     </>    

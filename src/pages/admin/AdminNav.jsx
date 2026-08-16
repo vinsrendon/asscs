@@ -20,20 +20,19 @@ function AdminNav(){
             } 
             else {
                 axios.get('/verify',{}).then((res)=>{
-                    console.log(res)
-                    
+                                    
                 localStorage.setItem('name',res.data.user.name)  
                 localStorage.setItem('role',res.data.user.role)  
                 
                 setName(localStorage.getItem('name').toUpperCase())  
                 setRole(localStorage.getItem('role').toUpperCase())
                 }).catch((err)=>{  
-                Swal.fire({
-                    title:"UNEXPECTED ERROR OCCURED, CHECK LOGS FOR MORE INFO",
-                    text:err,
-                    icon:"error"
-                })
-                console.log(err)
+                    Swal.fire({
+                        title:"UNEXPECTED ERROR OCCURED, CHECK LOGS FOR MORE INFO",
+                        text:err,
+                        icon:"error"
+                    })
+                    console.log(err)
                 })
             }
         }
@@ -71,8 +70,8 @@ function AdminNav(){
                 </div>     
             </div>
             <div className='flex flex-col gap-3'>
-                <NavLink to="/admindash" className={({ isActive }) => isActive ? "flex flex-nowrap bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2" : "flex flex-nowrap hover:bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2"} end><img className='invert' src={dashboard}/>Dashboard</NavLink>
-                <NavLink to="/adminaccounts" className={({ isActive }) => isActive ? "flex flex-nowrap bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2" : "flex flex-nowrap hover:bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2"} end><img className='invert' src={usersquare}/> Accounts</NavLink>
+                <NavLink to="/admin" className={({ isActive }) => isActive ? "flex flex-nowrap bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2" : "flex flex-nowrap hover:bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2"} end><img className='invert' src={dashboard}/>Dashboard</NavLink>
+                <NavLink to="/admin/accounts" className={({ isActive }) => isActive ? "flex flex-nowrap bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2" : "flex flex-nowrap hover:bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2"} end><img className='invert' src={usersquare}/> Accounts</NavLink>
             </div>
             
             <div className="mt-auto space-y-2">

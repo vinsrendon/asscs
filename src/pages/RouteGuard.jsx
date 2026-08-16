@@ -6,8 +6,6 @@ function RoleGuard({ children, allowedRoles }) {
   const [status, setStatus] = useState("loading");
   const [user, setUser] = useState(null);
 
-//   const location = useLocation();
-
   useEffect(() => {
     const verifyUser = async () => {
       try {
@@ -51,10 +49,10 @@ function RoleRedirect({ role }) {
       return <Navigate to="/admindash" replace />;
 
     case "TEACHER":
-      return <Navigate to="/teacherdash" replace />;
+      return <Navigate to="/teacher" replace />;
 
     case "STUDENT":
-      return <Navigate to="/studentdash" replace />;
+      return <Navigate to="/student" replace />;
 
     default:
       return <Navigate to="/" replace />;
