@@ -4,6 +4,8 @@ import Home from './pages/Home'
 import Register from './pages/Register'
 import StudentRegistration from './pages/StudentRegistration'
 import TeacherRegisration from './pages/TeacherRegisration'
+import AdminDashboard from './pages/admin/AdminDashboard'
+import RouteGuard from './pages/RouteGuard'
  
 // function Navigation(){
 //   return(
@@ -26,6 +28,7 @@ function App() {
           <Route path="/register" element={<Register/>} />          
           <Route path="/studdentregistration" element={<StudentRegistration/>} />          
           <Route path="/teacherregistration" element={<TeacherRegisration/>} />          
+          <Route path="/admindash" element={<RouteGuard allowedRoles={["ADMIN"]}><AdminDashboard/></RouteGuard>} />          
       </Routes>
     </>    
   )
