@@ -4,6 +4,7 @@ import axios from '../../axios-config.js';
 import arrow from '../assets/arrow-right-stroke.svg'
 import scan from '../assets/scan.svg'
 import sheet from '../assets/sheet.webp'
+import Swal from 'sweetalert2'
 
 function Home(){
     const [email, setEmail] = useState('')
@@ -16,25 +17,71 @@ function Home(){
 
         setLoading(true)
 
-        try {
-            const response = await axios.post(
-                '/login',
-                {
-                    email: email,
-                    password: password
+        await axios.post(
+            '/login',
+            {
+                email: email,
+                password: password
+            }
+        ).then((res)=>{        
+            if(res.status === 200){             
+                switch (res.data.role) {
+                    case "ADMIN":
+                    return navigate('/admindash')
+
+                    case "TEACHER":
+                    return
+
+                    case "STUDENT":
+                    return
+
+                    default:
+                    return navigate('/')
                 }
-            )
-            console.log('Success:', response.data);                       
+            }
+            else{
+                Swal.fire({
+                text:res.data.message,
+                icon:"warning"
+                });
+            }
             setEmail('')
             setPassword('')
-            if(response.data?.role === "ADMIN"){
-                navigate('/admindash')
+        }).catch((err)=>{
+            console.log(err);
+                        
+            switch (err.status) {
+                case 403:
+                    Swal.fire({
+                        text:err.response.data.message,
+                        icon:"warning"
+                    })
+                return
+
+                case 404:
+                    Swal.fire({
+                        text:err.response.data.message,
+                        icon:"warning"
+                    })
+                return
+
+                case 500:
+                    Swal.fire({
+                        text:err.response.data.message,
+                        icon:"error"
+                    })
+                return
+
+                default:
+                    Swal.fire({
+                        text:"UNEXPECTED ERROR OCCURED CHECK CONSOLE FOR MORE INFO",
+                        icon:"error"
+                    })
+                return
             }
-        } catch (error) {
-            console.error('Error:', error)
-        } finally {
+        }).finally(()=>{
             setLoading(false)
-        }
+        })
     };
 
     return(        
