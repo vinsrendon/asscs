@@ -45,7 +45,7 @@ function RoleGuard({ children, allowedRoles }) {
 }
 
 
-function RoleRedirect({ role }) {
+function RoleRedirect({ role }) {  
   switch (role) {
     case "ADMIN":
       return <Navigate to="/admindash" replace />;

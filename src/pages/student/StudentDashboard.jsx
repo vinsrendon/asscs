@@ -16,7 +16,7 @@ function StudentDashboard(){
                 <StudentNav/>
             </section>
             <section className="flex-1 bg-white p-5">  
-                <div className='py-6 px-10 mx-6 bg-blue-500 rounded-2xl text-white'>
+                <div className='py-6 px-10 mx-6 bg-blue-500 rounded-2xl text-white shadow-sm shadow-gray-300'>
                     <h1 className='font-bold text-4xl mb-2'>Welcome, {name}!</h1>
                     <p className='text-md'>
                         Track your academic progress, view detailed exam breakdowns,<br/> 

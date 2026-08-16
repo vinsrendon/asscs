@@ -8,6 +8,9 @@ import AdminAccounts from './pages/admin/AdminAccounts'
 import RouteGuard from './pages/RouteGuard'
 import StudentDashboard from './pages/student/StudentDashboard'
 import TeacherDashboard from './pages/teacher/TeacherDashboard'
+import StudentResults from './pages/student/StudentResults'
+import StudentPerformance from './pages/student/StudentPerformance'
+import StudentChat from './pages/student/StudentChat'
 
 function App() {
   return (
@@ -25,16 +28,31 @@ function App() {
           <Route path="/adminaccounts" element={
             <RouteGuard allowedRoles={["ADMIN"]}>
               <AdminAccounts/>              
-            </RouteGuard>} />         
+            </RouteGuard>} />    
+
+          <Route path="/teacherdash" element={
+            <RouteGuard allowedRoles={["TEACHER"]}>
+              <TeacherDashboard/>              
+            </RouteGuard>} />  
 
           <Route path="/studentdash" element={
             <RouteGuard allowedRoles={["STUDENT"]}>
               <StudentDashboard/>              
-            </RouteGuard>} />      
-          
-          <Route path="/teacherdash" element={
-            <RouteGuard allowedRoles={["TEACHER"]}>
-              <TeacherDashboard/>              
+            </RouteGuard>} />    
+
+          <Route path="/studentresult" element={
+            <RouteGuard allowedRoles={["STUDENT"]}>
+              <StudentResults/>              
+            </RouteGuard>} />  
+
+          <Route path="/studentperf" element={
+            <RouteGuard allowedRoles={["STUDENT"]}>
+              <StudentPerformance/>              
+            </RouteGuard>} />  
+
+          <Route path="/studentchat" element={
+            <RouteGuard allowedRoles={["STUDENT"]}>
+              <StudentChat/>              
             </RouteGuard>} />  
       </Routes>
     </>    
