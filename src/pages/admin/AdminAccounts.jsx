@@ -25,18 +25,13 @@ function AdminAccounts(){
 
     const filteredUsers = users.filter((user) => {
         const matchesRole =
-            selected === "all" ||
-            (selected === "teachers" && user.role?.toLowerCase() === "teacher") ||
+            selected === "all" || (selected === "teachers" && user.role?.toLowerCase() === "teacher") || 
             (selected === "students" && user.role?.toLowerCase() === "student");
 
-        const searchTerm = search.toLowerCase().trim();
-        const matchesSearch =
-            !searchTerm ||
-            user.name?.toLowerCase().includes(searchTerm) ||
-            user.lname?.toLowerCase().includes(searchTerm) ||
-            `${user.name} ${user.lname}`.toLowerCase().includes(searchTerm) ||
-            user.email?.toLowerCase().includes(searchTerm) ||
-            (user.studentId && String(user.studentId).toLowerCase().includes(searchTerm));
+            const searchTerm = search.toLowerCase().trim();
+            const matchesSearch = !searchTerm || user.name?.toLowerCase().includes(searchTerm) ||
+            user.lname?.toLowerCase().includes(searchTerm) || `${user.name} ${user.lname}`.toLowerCase().includes(searchTerm) ||
+            user.email?.toLowerCase().includes(searchTerm) || (user.studentId && String(user.studentId).toLowerCase().includes(searchTerm));
 
         return matchesRole && matchesSearch;
     });
@@ -44,8 +39,8 @@ function AdminAccounts(){
         <>
             <div className='flex justify-between max-md:mt-10'>
                 <div>
-                <h2 className='text-2xl font-bold'>Account Management</h2>
-                <p className='text-muted-foreground'>Manage Teacher and student accounts</p>
+                    <h2 className='text-2xl font-bold'>Account Management</h2>
+                    <p className='text-muted-foreground'>Manage Teacher and student accounts</p>
                 </div>
                 <div>
                     <button className='px-3 py-2 text-white rounded-2xl bg-blue-500 hover:bg-blue-400 font-semibold'>+ Add Account</button>
@@ -58,15 +53,10 @@ function AdminAccounts(){
                     {options.map((opt) => (
                         <label key={opt.value} className="cursor-pointer">
                         <input type="radio" name="option" value={opt.value} checked={selected === opt.value} onChange={() => setSelected(opt.value)} className="sr-only"/>
-                        <span
-                            className={`
-                            inline-block px-4 py-2.5 rounded-xl border-2 font-medium transition-all
-                            ${selected === opt.value
-                                ? 'bg-primary text-white border-primary shadow-lg shadow-primary/25'
-                                : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-primary/50'
-                            }
-                            `}
-                        >
+                        <span className={`inline-block px-4 py-2.5 rounded-xl border-2 font-medium transition-all 
+                            ${selected === opt.value? 
+                            'bg-primary text-white border-primary shadow-lg shadow-primary/25' : 
+                            'bg-slate-50 text-slate-700 border-slate-200 hover:border-primary/50'}`}>
                             {opt.label}
                         </span>
                         </label>
