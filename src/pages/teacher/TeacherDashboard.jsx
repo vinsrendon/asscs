@@ -1,5 +1,3 @@
-import scan from '../../assets/scan.svg'
-
 function TeacherDashboard(){    
     return(
         <>
