@@ -67,14 +67,22 @@ function TeacherDashboard(){
                     <div>
                         <h1 className='font-bold text-2xl leading-none'>System Status</h1>
                     </div> 
-                    <div className='text-white p-2 text-lg md:text-2xl text-center rounded-2xl flex flex-row justify-around gap-4'>
-                        <div className="flex flex-col justify-center items-center w-1/2 bg-blue-50 rounded-2xl py-5 hover:bg-blue-200">
-                            <svg className='fill-blue-500' width="32" height="32" fill="currentColor" viewBox="0 0 24 24" transform="" id="injected-svg" xmlns="http://www.w3.org/2000/svg"><path d="M9 5V3H3v6h2V5zm12 4V3h-6v2h4v4zm-2 10h-4v2h6v-6h-2zM5 15H3v6h6v-2H5zm-3-4h20v2H2z"></path></svg>
-                            <h1 className='font-bold leading-none text-black'>Scan Sheet</h1>
+                    <div className='text-white p-2 text-md md:text-lg text-center rounded-2xl flex flex-col justify-around gap-4 font-bold'>
+                        <div className="bg-green-50 text-green-500 rounded-2xl p-2">
+                            <div>
+                                <ul className="flex flex-row justify-between items-center">
+                                    <li className="list-disc ml-6">Scanner Status</li>
+                                    <li>Offline</li>
+                                </ul>
+                            </div>
                         </div>
-                        <div className="flex flex-col justify-center items-center w-1/2 bg-blue-50 rounded-2xl py-5 hover:bg-blue-200">
-                            <svg className='fill-blue-500' width="32" height="32" fill="currentColor" viewBox="0 0 24 24" transform="" id="injected-svg" xmlns="http://www.w3.org/2000/svg"><path d="m19.94 7.68-.03-.09a.8.8 0 0 0-.2-.29l-5-5c-.09-.09-.19-.15-.29-.2l-.09-.03a.8.8 0 0 0-.26-.05c-.02 0-.04-.01-.06-.01H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-12s-.01-.04-.01-.06c0-.09-.02-.17-.05-.26ZM6 20V4h7v4c0 .55.45 1 1 1h4v11z"></path><path d="M8 11h8v2H8zm0 4h8v2H8zm0-8h3v2H8z"></path></svg>
-                            <h1 className='font-bold leading-none text-black'>New Exam</h1>
+                        <div className="bg-blue-50 text-blue-500 rounded-2xl p-2">
+                            <div>
+                                <ul className="flex flex-row justify-between items-center">
+                                    <li className="list-disc ml-6">Chatbot Status</li>
+                                    <li>Offline</li>
+                                </ul>
+                            </div>
                         </div>
                     </div>    
                 </div>

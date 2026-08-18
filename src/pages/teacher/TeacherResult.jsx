@@ -20,11 +20,11 @@ function TeacherResult(){
                 <table className="w-full text-left text-sm text-gray-600">
                     <thead className="bg-gray-50 text-xs uppercase text-gray-700">
                     <tr>
-                        <th className="px-6 py-4 font-semibold text-center">STUDENT</th>
-                        <th className="px-6 py-4 font-semibold text-center">EXAM</th>
-                        <th className="px-6 py-4 font-semibold text-center">SCORE</th>
-                        <th className="px-6 py-4 font-semibold text-center">PERCENTAGE</th>
-                        <th className="px-6 py-4 font-semibold text-center">DATE SCANNED</th>
+                        <th className="px-6 py-4 font-extrabold text-center">STUDENT</th>
+                        <th className="px-6 py-4 font-extrabold text-center">EXAM</th>
+                        <th className="px-6 py-4 font-extrabold text-center">SCORE</th>
+                        <th className="px-6 py-4 font-extrabold text-center">PERCENTAGE</th>
+                        <th className="px-6 py-4 font-extrabold text-center">DATE SCANNED</th>
                     </tr>
                     </thead>
 
