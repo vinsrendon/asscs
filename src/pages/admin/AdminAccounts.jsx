@@ -37,16 +37,16 @@ function AdminAccounts(){
     });
     return(
         <>
-            <div className='flex justify-between max-md:mt-10'>
+            <div className='flex max-md:flex-col-reverse justify-between max-md:mt-10'>
                 <div>
                     <h2 className='text-2xl font-bold'>Account Management</h2>
                     <p className='text-muted-foreground'>Manage Teacher and student accounts</p>
                 </div>
-                <div>
+                <div className='max-md:self-end'>
                     <button className='px-3 py-2 text-white rounded-2xl bg-blue-500 hover:bg-blue-400 font-semibold'>+ Add Account</button>
                 </div>
             </div>
-            <div className='mt-5 flex max-md:flex-col justify-between gap-1'>
+            <div className='mt-5 flex flex-wrap max-md:flex-col justify-between gap-1'>
                 <input className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" required placeholder="Search by name, email, or student ID..." type="text" value={search} onChange={(e) => setSearch(e.target.value)}/>
 
                 <div className="flex gap-2">
@@ -57,7 +57,7 @@ function AdminAccounts(){
                             ${selected === opt.value? 
                             'bg-primary text-white border-primary shadow-lg shadow-primary/25' : 
                             'bg-slate-50 text-slate-700 border-slate-200 hover:border-primary/50'}`}>
-                            {opt.label}
+                            {opt.label} 
                         </span>
                         </label>
                     ))}

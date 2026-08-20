@@ -103,7 +103,7 @@ function AdminNav(){
         </button>
         
         {isMenuOpen && (
-        <aside id="mobileMenu" className="absolute w-full h-full bg-black text-white">
+        <aside id="mobileMenu" className="absolute w-full inset-0 bg-black text-white">
             <div className="flex items-center justify-center gap-3 p-2 mb-10 max-md:mt-20">
                 <div className='text-white bg-[#12264F] p-2 rounded-2xl'>
                     <img src={scan} alt="scan icon"/>
@@ -131,7 +131,7 @@ function AdminNav(){
                         </div>     
                     </div>
                 </div>
-                <div className='flex px-2'>
+                <div className='block mt-4 bottom-4 text-xl font-bold px-4 py-2 text-center'>
                     <NavLink to="#" onClick={logout} className="text-center mx-auto py-2 px-13 rounded-2xl w-full text-2xl font-bold bg-[#12264F]">Sign out</NavLink>
                 </div>
             </div>
