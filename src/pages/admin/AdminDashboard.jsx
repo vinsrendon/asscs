@@ -1,7 +1,10 @@
 function AdminDashboard(){    
     return(
         <>
-            <h1>ADMIN DASH</h1>
+            <div className="max-md:mt-10">
+                <h1>ADMIN DASH</h1>
+            </div>
+            
         </>
     )
 }
