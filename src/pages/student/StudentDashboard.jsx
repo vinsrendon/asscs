@@ -11,15 +11,15 @@ function StudentDashboard(){
     
     return(
         <>
-        <div className='py-6 px-10 mx-6 bg-blue-500 rounded-2xl text-white shadow-sm shadow-gray-300'>
+        <div className='py-6 px-10 md:mx-6 bg-blue-500 rounded-2xl text-white shadow-sm shadow-gray-300 max-md:mt-10'>
             <h1 className='font-bold text-4xl mb-2'>Welcome, {name}!</h1>
             <p className='text-md'>
                 Track your academic progress, view detailed exam breakdowns,<br/> 
                 and chat with your AI assistant to impove your scores.
             </p>
         </div>
-        <div className='my-6 mx-6 rounded-2xl flex justify-around gap-4'>
-            <div className="flex flex-1 items-center gap-3 p-5 rounded-2xl mb-10 shadow-sm shadow-gray-300">
+        <div className='my-6 mx-6 rounded-2xl flex justify-around flex-wrap gap-4'>
+            <div className="flex flex-1 min-w-48 items-center gap-3 p-5 rounded-2xl shadow-sm shadow-gray-300">
                 <div className='text-white bg-green-100 p-2 rounded-2xl '>
                     <img className='' src={medal}/>
                 </div>   
@@ -28,7 +28,7 @@ function StudentDashboard(){
                     <h1 className='font-bold text-2xl leading-none'>0 %</h1>
                 </div>     
             </div>
-            <div className="flex flex-1 items-center gap-3 p-5 rounded-2xl mb-10 shadow-sm shadow-gray-300">
+            <div className="flex flex-1 min-w-48 items-center gap-3 p-5 rounded-2xl shadow-sm shadow-gray-300">
                 <div className='text-white bg-blue-100 p-2 rounded-2xl '>
                     <img className='' src={book}/>
                 </div>   
@@ -37,7 +37,7 @@ function StudentDashboard(){
                     <h1 className='font-bold text-2xl leading-none'>0</h1>
                 </div>     
             </div>
-            <div className="flex flex-1 items-center gap-3 p-5 rounded-2xl mb-10 shadow-sm shadow-gray-300">
+            <div className="flex flex-1 min-w-48 items-center gap-3 p-5 rounded-2xl shadow-sm shadow-gray-300">
                 <div className='text-white bg-blue-100 p-2 rounded-2xl '>
                     <img className='' src={bullseye}/>
                 </div>   

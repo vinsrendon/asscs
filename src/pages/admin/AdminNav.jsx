@@ -58,8 +58,13 @@ function AdminNav(){
     }
 
     const [isMenuOpen, setIsMenuOpen] = useState(false)
+    const [isDisabled, setIsDisabled] = useState(false)
     const toggleMenu = () => {
         setIsMenuOpen(prev => !prev)
+        setIsDisabled(true)
+        setTimeout(() => {
+            setIsDisabled(false)
+        }, 100)
     }
 
     return(
@@ -96,7 +101,7 @@ function AdminNav(){
             </div>
         </aside>
 
-        <button className="md:hidden max-md:fixed max-md:top-0 z-99 p-5 bg-nav flex items-center text-white focus:outline-none" onClick={toggleMenu}>
+        <button disabled={isDisabled} className="md:hidden max-md:fixed max-md:top-0 z-99 p-5 bg-nav flex items-center text-white focus:outline-none" onClick={toggleMenu}>
             <svg className="w-7 h-7" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
             <path stroke={isMenuOpen ? "white" : "black"} strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M1 1h15M1 7h15M1 13h15"/>
             </svg>

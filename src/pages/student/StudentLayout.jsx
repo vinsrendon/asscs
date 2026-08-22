@@ -3,8 +3,8 @@ import StudentNav from './StudentNav'
 
 function StudentLayout() {
     return (
-        <main className="min-h-screen w-full flex">
-            <section className="absolute content-start md:static max-md:w-20 max-md:bg-[#111629]/0 bg-[#111629] p-5 z-999">
+        <main className="min-h-screen md:flex">
+            <section className="md:static max-md:w-full inset-0 max-md:bg-[#111629]/90 bg-[#111629] md:p-5">
                 <StudentNav />
             </section>
 

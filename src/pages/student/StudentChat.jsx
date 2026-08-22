@@ -1,7 +1,9 @@
 function StudentChat(){    
     return(
         <>
-            <h1>ASSISTANT</h1>
+            <div className="max-md:mt-10">
+                <h1>ASSISTANT</h1>
+            </div>
         </>
     )
 }
