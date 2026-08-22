@@ -1,6 +1,6 @@
 import {NavLink, useNavigate } from 'react-router'
-import { useState } from 'react';
-import axios from '../../axios-config.js';
+import { useState } from 'react'
+import axios from '../../axios-config.js'
 import arrow from '../assets/arrow-right-stroke.svg'
 import scan from '../assets/scan.svg'
 import sheet from '../assets/sheet.webp'
@@ -43,12 +43,12 @@ function Home(){
                 Swal.fire({
                 text:res.data.message,
                 icon:"warning"
-                });
+                })
             }
             setEmail('')
             setPassword('')
         }).catch((err)=>{
-            console.log(err);
+            console.log(err)
                         
             switch (err.status) {
                 case 403:
@@ -82,7 +82,7 @@ function Home(){
         }).finally(()=>{
             setLoading(false)
         })
-    };
+    }
 
     return(        
         <main className="min-h-screen w-full flex">     

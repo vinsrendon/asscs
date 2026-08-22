@@ -9,32 +9,34 @@ function AdminAccounts(){
         { value: 'all', label: 'All' },
         { value: 'teachers', label: 'Teachers' },
         { value: 'students', label: 'Students' },
+        { value: 'pendings', label: 'Pendings' },
     ]
 
-    const [users, setUsers] = useState([]);
+    const [users, setUsers] = useState([])
 
     useEffect(() => {        
         axios.get("/users")
             .then((res) => {                
-                setUsers(res.data);
+                setUsers(res.data)          
             })
             .catch((err) => {
-                console.error(err);
-            });
-    }, []);
+                console.error(err)
+            })
+    }, [])
 
     const filteredUsers = users.filter((user) => {
         const matchesRole =
             selected === "all" || (selected === "teachers" && user.role?.toLowerCase() === "teacher") || 
-            (selected === "students" && user.role?.toLowerCase() === "student");
+            (selected === "students" && user.role?.toLowerCase() === "student") ||
+            (selected === "pendings" && user.status?.toLowerCase() === "pending")
 
-            const searchTerm = search.toLowerCase().trim();
+            const searchTerm = search.toLowerCase().trim()
             const matchesSearch = !searchTerm || user.name?.toLowerCase().includes(searchTerm) ||
             user.lname?.toLowerCase().includes(searchTerm) || `${user.name} ${user.lname}`.toLowerCase().includes(searchTerm) ||
-            user.email?.toLowerCase().includes(searchTerm) || (user.studentId && String(user.studentId).toLowerCase().includes(searchTerm));
+            user.email?.toLowerCase().includes(searchTerm) || (user.studentId && String(user.studentId).toLowerCase().includes(searchTerm))
 
-        return matchesRole && matchesSearch;
-    });
+        return matchesRole && matchesSearch
+    })
     return(
         <>
             <div className='flex max-md:flex-col-reverse justify-between max-md:mt-10'>
@@ -65,7 +67,7 @@ function AdminAccounts(){
             </div>
             <div className="mt-5 w-full overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
                 <table className="w-full text-left text-sm text-gray-600">
-                    <thead className="bg-gray-50 text-xs uppercase text-gray-700">
+                    <thead className="bg-gray-50 text-xs uppercase text-gray-700 text-center">
                     <tr>
                         <th className="px-6 py-4 font-semibold">Name</th>
                         <th className="px-6 py-4 font-semibold">Email</th>
@@ -79,9 +81,9 @@ function AdminAccounts(){
                     <tbody className="divide-y divide-gray-200 text-center">
                     {
                         filteredUsers.map((user) => (
-                            <tr key={user.uid} className="hover:bg-gray-200 transition-colors">
+                            <tr key={user.uid} className={user.status === 'PENDING' ? "bg-amber-100 hover:bg-current/5 transition-colors" : "hover:bg-current/5 transition-colors"}>
                                 <td className="px-6 py-4 font-medium text-gray-900">
-                                    {user.name} {user.lname}
+                                    {user.fname} {user.lname}
                                 </td>
 
                                 <td className="px-6 py-4">
@@ -95,7 +97,7 @@ function AdminAccounts(){
                                 </td>
 
                                 <td className="px-6 py-4">
-                                -
+                                    {user.student_id? user.student_id:"-"}
                                 </td>
 
                                 <td className="px-6 py-4">
