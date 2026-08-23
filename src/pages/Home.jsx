@@ -41,8 +41,8 @@ function Home(){
             }
             else{
                 Swal.fire({
-                text:res.data.message,
-                icon:"warning"
+                    text:res.data.message,
+                    icon:"warning"
                 })
             }
             setEmail('')

@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import axios from "../../../axios-config"
 import Modal from '../modal.jsx'
+import Swal from 'sweetalert2'
 
 function AdminAccounts(){
     const [search, setSearch] = useState('')
     const [selected, setSelected] = useState('all')
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false)
 
     const options = [
         { value: 'all', label: 'All' },
@@ -18,12 +19,12 @@ function AdminAccounts(){
 
     useEffect(() => {        
         axios.get("/users")
-            .then((res) => {                
-                setUsers(res.data)          
-            })
-            .catch((err) => {
-                console.error(err)
-            })
+        .then((res) => {                
+            setUsers(res.data)          
+        })
+        .catch((err) => {
+            console.error(err)
+        })
     }, [])
 
     const filteredUsers = users.filter((user) => {
@@ -40,16 +41,60 @@ function AdminAccounts(){
         return matchesRole && matchesSearch
     })
 
-    const [selectedUser, setSelectedUser] = useState(null);
+    const [selectedUser, setSelectedUser] = useState(null)
+    const [originalUser, setOriginalUser] = useState(null)
 
     const editUser = (user) => {
         setSelectedUser(user)
+        setOriginalUser(user)
         setIsModalOpen(true)
     }
 
     const closeEditModal = () => {
         setSelectedUser(null)
-        setIsModalOpen(false)
+        setIsModalOpen(false)        
+    }
+
+    const submitEdit = async (e) => {
+        e.preventDefault()
+
+        const changedFields = {}
+
+        Object.keys(selectedUser).forEach((key) => {
+            if (selectedUser[key] !== originalUser[key]) {
+                changedFields[key] = selectedUser[key]
+            }
+        })
+
+        if (Object.keys(changedFields).length === 0) {
+            console.log("No changes")
+            closeEditModal()
+            return
+        }
+        
+        await axios.patch(
+            `/user/${selectedUser.uid}`,
+            changedFields
+        ).then((res)=>{            
+            axios.get("/users")
+                .then((res) => {                
+                    setUsers(res.data)          
+                })
+                .catch((err) => {
+                    Swal.fire({
+                        text: err,
+                        icon:"error"
+                    })
+                })
+            Swal.fire({
+                title: "Updated",
+                text: res.data.message,
+                icon:"success"
+            })
+            closeEditModal()
+        }).catch((err) => {
+            console.error("Update failed:", err)
+        })
     }
 
 
@@ -59,7 +104,7 @@ function AdminAccounts(){
             <Modal isOpen={isModalOpen} onClose={() => closeEditModal()} >
                 <h2 className="text-4xl font-bold text-center pb-4">Edit User Info</h2>
                 {selectedUser && (
-                    <form className='flex gap-2 flex-col'>
+                    <form onSubmit={submitEdit} className='flex gap-2 flex-col'>
                         <div className='flex justify-between flex-wrap text-2xl'>
                             <label className="font-bold">Firstname</label>
                             <input type='text' disabled value={selectedUser.fname}></input>
@@ -82,21 +127,55 @@ function AdminAccounts(){
                         </div>
                         <div className='flex justify-between flex-wrap text-2xl'>
                             <label className="font-bold">Phone</label>
-                            <input type='text' value={selectedUser.phone}></input>
+                            <input required minLength='11' maxLength='11' type="numeric" pattern="[0-9]*" value={selectedUser.phone} 
+                                onChange={(e) =>
+                                    setSelectedUser({
+                                        ...selectedUser,
+                                        phone: e.target.value
+                                    })
+                                }>
+                            </input>
                         </div>
                         <div className='flex justify-between flex-wrap text-2xl'>
                             <label className="font-bold">Email</label>
-                            <input type='text' value={selectedUser.email}></input>
+                            <input className="" type='text' value={selectedUser.email}
+                                onChange={(e) =>
+                                    setSelectedUser({
+                                        ...selectedUser,
+                                        email: e.target.value
+                                    })
+                                }>                            
+                            </input>
                         </div>
                         <div className='flex justify-between flex-wrap text-2xl'>
                             <label className="font-bold">Password</label>
-                            <input type='password' value=""></input>
-                            {/* <button className='py-2 px-3 bg-red-400 hover:bg-red-300 rounded-2xl'>Change Password</button> */}
+                            <input type='password' value={selectedUser.password}
+                                onChange={(e) =>
+                                    setSelectedUser({
+                                        ...selectedUser,
+                                        password: e.target.value
+                                    })
+                                }>
+                            </input>
                         </div>
                         <div className='flex justify-between flex-wrap text-2xl'>
                             <label className="font-bold">Status</label>
-                            <input type='text' disabled value={selectedUser.status}></input>
+                            {/* <input type='text' disabled value={selectedUser.status}></input> */}
+                            <select required name="course" id="course" className='w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm' value={selectedUser.status} 
+                                onChange={(e) => 
+                                    setSelectedUser({
+                                        ...selectedUser,
+                                        status: e.target.value
+                                    })
+                                }>
+                                <option value="PENDING">PENDING</option>
+                                <option value="ACTIVE">ACTIVE</option>
+                                <option value="INACTIVE">INACTIVE</option>
+                            </select>
                         </div>
+                        <button type='submit' className="cursor-pointer rounded bg-gray-800 hover:bg-gray-700 px-4 py-2 text-white" >
+                            Save
+                        </button>
                     </form>           
                 )}
             </Modal>
@@ -143,7 +222,8 @@ function AdminAccounts(){
                     <tbody className="divide-y divide-gray-200 text-center">
                     {
                         filteredUsers.map((user) => (
-                            <tr key={user.uid} className={user.status === 'PENDING' ? "bg-red-300 hover:bg-red-200 transition-colors" : "hover:bg-current/5 transition-colors"}>
+                            <tr key={user.uid} className={
+                                user.status === 'PENDING' || user.status === 'INACTIVE' ? "bg-red-300 hover:bg-red-200 transition-colors" : "hover:bg-current/5 transition-colors"}>
                                 <td className="px-6 py-4 font-medium text-gray-900">
                                     {user.fname} {user.lname}
                                 </td>
