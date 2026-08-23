@@ -95,7 +95,7 @@ function StudentNav(){
                     <div className="flex items-center gap-3">
                         <div className='text-white p-2 rounded-2xl'>
                             {/* <img src={user} alt="user icon" className='fill-white stroke-white'/> */}
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="5"></circle><path d="M20 21a8 8 0 0 0-16 0"></path></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="5"></circle><path d="M20 21a8 8 0 0 0-16 0"></path></svg>
                         </div>   
                         <div className='break-all'>
                             <h1 className='font-bold text-lg leading-none'>{name}</h1>
@@ -135,7 +135,7 @@ function StudentNav(){
                 <div className='bg-[#12264F] rounded-2xl p-2 mx-2'>
                     <div className="flex items-center gap-3">
                         <div className='text-white p-2 rounded-2xl'>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="5"></circle><path d="M20 21a8 8 0 0 0-16 0"></path></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="5"></circle><path d="M20 21a8 8 0 0 0-16 0"></path></svg>
                         </div>   
                         <div>
                             <h1 className='font-bold text-lg leading-none'>{name}</h1>
