@@ -113,7 +113,7 @@ function TeacherNav(){
         </button>
         
         {isMenuOpen && (
-            <aside id="mobileMenu" className="md:hidden absolute w-full inset-0 bg-black text-white">
+            <aside id="mobileMenu" className="md:hidden fixed inset-0 z-50 w-full h-dvh bg-black text-white overflow-y-auto">
                 <div className="flex items-center justify-center gap-3 p-2 mb-10 max-md:mt-20">
                     <div className='text-white bg-[#12264F] p-2 rounded-2xl'>
                         <img src={scan} alt="scan icon"/>

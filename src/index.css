@@ -36,3 +36,44 @@
   --color-sidebar-accent: hsl(217.2 32.6% 17.5%);
   --color-sidebar-accent-foreground: hsl(210 40% 98%);
 }
+
+.wmde-markdown {
+  background-color: none !important;
+  --color-canvas-default: none;
+  --color-canvas-subtle: none;
+  --color-border-default: none;
+  --color-border-muted: none;
+  color: #000;
+}
+
+.wmde-markdown table {
+  background: none !important;
+  color: #000;
+}
+
+.wmde-markdown table tr,
+.wmde-markdown table tr:nth-child(2n),
+.wmde-markdown table th,
+.wmde-markdown table td {
+  background-color: none !important;
+  color: #000;
+}
+
+.wmde-markdown pre {
+  background-color: #f6f8fa !important;
+  border-radius: 6px;
+  padding: 16px !important;
+}
+
+.wmde-markdown pre code {
+  background-color: transparent !important;
+  color: #24292f !important;
+}
+
+/* ========== Inline code ========== */
+.wmde-markdown code:not(pre code) {
+  background-color: rgba(175, 184, 193, 0.2) !important;
+  color: #24292f !important;
+  padding: 0.2em 0.4em;
+  border-radius: 6px;
+}
