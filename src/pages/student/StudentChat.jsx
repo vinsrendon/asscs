@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import axios from '../../../axios-config.js'
 
 function StudentChat(){    
@@ -7,8 +7,10 @@ function StudentChat(){
     const [conversationId, setConversationId] = useState(null)
     const [isGenerating, setIsGenerating] = useState(false)
 
-    const conversationIdRef = useRef(conversationId);
-    conversationIdRef.current = conversationId;
+    const conversationIdRef = useRef(conversationId)
+    useEffect(() => {
+        conversationIdRef.current = conversationId
+}, [conversationId])
 
     const handleSend = async () => {
         if (!input.trim() || isGenerating) return
@@ -17,17 +19,15 @@ function StudentChat(){
         setInput('')
         setIsGenerating(true)
 
-        // Append user message immediately & prepare empty bot response holder
         setMessages(prev => [
         ...prev,
         { role: 'user', content: userText },
         { role: 'model', content: '' }
         ])
 
-        let processedLength = 0;
+        let processedLength = 0
 
     try {
-      // 2. Send Axios POST request with streaming listener
       await axios.post(
             '/api/chat/stream',
             {
@@ -35,59 +35,56 @@ function StudentChat(){
                 prompt: userText,
             },
             {
-            responseType: 'text', // Read response as progressive text chunks
+            responseType: 'text',
             onDownloadProgress: (progressEvent) => {
-                // Get raw chunk received so far
-                const fullResponse = progressEvent.event.target.responseText;
-                const newChunk = fullResponse.slice(processedLength);
-                processedLength = fullResponse.length;
+                const fullResponse = progressEvent.event.target.responseText
+                const newChunk = fullResponse.slice(processedLength)
+                processedLength = fullResponse.length
 
-                // Parse server SSE data format (`data: {...}\n\n`)
-                const lines = newChunk.split('\n\n');
+                const lines = newChunk.split('\n\n')
 
                 for (const line of lines) {
                 if (line.startsWith('data: ')) {
-                    const dataStr = line.replace('data: ', '').trim();
-                    if (dataStr === '[DONE]') break;
+                    const dataStr = line.replace('data: ', '').trim()
+                    if (dataStr === '[DONE]') break
 
                     try {
-                    const payload = JSON.parse(dataStr);
+                    const payload = JSON.parse(dataStr)
 
                     if (payload.type === 'meta') {
-                        setConversationId(payload.conversationId);
+                        setConversationId(payload.conversationId)
                     } else if (payload.type === 'token') {
-                        // Update state with incoming token text
                         setMessages((prev) => {
-                        const updated = [...prev];
-                        const lastIdx = updated.length - 1;
+                        const updated = [...prev]
+                        const lastIdx = updated.length - 1
                         updated[lastIdx] = {
                             ...updated[lastIdx],
                             content: updated[lastIdx].content + payload.text,
-                        };
-                        return updated;
-                        });
+                        }
+                        return updated
+                        })
                     }
                     } catch (err) {
-                    // Ignore JSON parse errors for split chunks
+                        console.log("JSON parse error:"+err)                        
                     }
                 }
                 }
             },
             }
-        );
+        )
         } catch (err) {
-        console.error('Axios Chat Error:', err);
+        console.error('Axios Chat Error:', err)
         setMessages((prev) => {
-            const updated = [...prev];
-            const lastIdx = updated.length - 1;
+            const updated = [...prev]
+            const lastIdx = updated.length - 1
             updated[lastIdx] = {
             ...updated[lastIdx],
             content: 'Error: Failed to get response.',
-            };
-            return updated;
-        });
+            }
+            return updated
+        })
         } finally {
-        setIsGenerating(false);
+        setIsGenerating(false)
         }
     }
     return(
