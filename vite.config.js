@@ -8,4 +8,10 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],  
+  server: {
+      host: true,
+      allowedHosts: [
+          'postdepressive-unequilibrated-mckenzie.ngrok-free.dev'
+      ]
+  }
 })
