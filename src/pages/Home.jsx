@@ -74,7 +74,8 @@ function Home(){
 
                 default:
                     Swal.fire({
-                        text:"UNEXPECTED ERROR OCCURED CHECK CONSOLE FOR MORE INFO",
+                        title:"UNEXPECTED ERROR OCCURED CHECK CONSOLE FOR MORE INFO",
+                        text:err,
                         icon:"error"
                     })
                 return

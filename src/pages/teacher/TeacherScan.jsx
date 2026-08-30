@@ -1,35 +1,61 @@
-import React, { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect } from 'react'
 
 function TeacherScan(){  
-    const videoRef = useRef(null);
-    const canvasRef = useRef(null);        // used for continuous scanning
-    const resultCanvasRef = useRef(null);  // shows highlighted paper live
-    const resultContainerRef = useRef(null); // where extracted paper is appended
+    const videoRef = useRef(null)
+    const canvasRef = useRef(null)
+    const resultCanvasRef = useRef(null)
+    const resultContainerRef = useRef(null)
 
-    const [stream, setStream] = useState(null);
-    const [status, setStatus] = useState('CAMERA SCAN');
-    const intervalRef = useRef(null);
-    const scannerRef = useRef(null);
+    const [stream, setStream] = useState(null)
+    const intervalRef = useRef(null)
+    const scannerRef = useRef(null)
 
-    // Initialize jscanify once
+    const stopCamera = () => {
+        if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+        }
+
+        if (stream) {
+        stream.getTracks().forEach((track) => track.stop())
+        setStream(null)
+        }
+
+        if (videoRef.current) {
+        videoRef.current.srcObject = null
+        }
+
+        // Clear canvases
+        if (canvasRef.current) {
+        canvasRef.current.width = 0
+        canvasRef.current.height = 0
+        }
+        if (resultCanvasRef.current) {
+        resultCanvasRef.current.width = 0
+        resultCanvasRef.current.height = 0
+        }
+
+        // Clear extracted papers
+        if (resultContainerRef.current) {
+        resultContainerRef.current.replaceChildren()
+        }
+    }
+
     useEffect(() => {
-        // Make sure jscanify is loaded (via CDN or import)
         if (window.jscanify) {
-        scannerRef.current = new window.jscanify();
+        scannerRef.current = new window.jscanify()
         } else {
-        console.error('jscanify is not loaded. Please include the library.');
+        console.error('jscanify is not loaded. Please include the library.')
         }
 
         return () => {
-        // Cleanup on unmount
-        stopCamera();
-        };
-    }, []);
+        stopCamera()
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     const startCamera = async () => {
         try {
-        setStatus('Scanning...');
-
         const mediaStream = await navigator.mediaDevices.getUserMedia({
             video: {
             facingMode: 'environment', // prefer rear camera
@@ -37,117 +63,80 @@ function TeacherScan(){
             height: { ideal: 720 },
             },
             audio: false,
-        });
+        })
 
         if (videoRef.current) {
-            videoRef.current.srcObject = mediaStream;
-            setStream(mediaStream);
+            videoRef.current.srcObject = mediaStream
+            setStream(mediaStream)
 
             videoRef.current.onloadedmetadata = () => {
-            const video = videoRef.current;
-            const canvas = canvasRef.current;
-            const resultCanvas = resultCanvasRef.current;
+            const video = videoRef.current
+            const canvas = canvasRef.current
+            const resultCanvas = resultCanvasRef.current
 
-            const w = video.videoWidth;
-            const h = video.videoHeight;
+            const w = video.videoWidth
+            const h = video.videoHeight
 
-            canvas.width = w;
-            canvas.height = h;
-            resultCanvas.width = w;
-            resultCanvas.height = h;
+            canvas.width = w
+            canvas.height = h
+            resultCanvas.width = w
+            resultCanvas.height = h
 
-            video.play();
+            video.play()
 
             // Continuous paper highlighting
             intervalRef.current = setInterval(() => {
-                if (!scannerRef.current || !video || video.readyState < 2) return;
+                if (!scannerRef.current || !video || video.readyState < 2) return
 
-                const canvasCtx = canvas.getContext('2d');
-                const resultCtx = resultCanvas.getContext('2d');
+                const canvasCtx = canvas.getContext('2d')
+                const resultCtx = resultCanvas.getContext('2d')
 
-                canvasCtx.drawImage(video, 0, 0, w, h);
+                canvasCtx.drawImage(video, 0, 0, w, h)
 
                 const highlighted = scannerRef.current.highlightPaper(canvas, {
                 color: '#89CFF0',
                 thickness: 5,
-                });
+                })
 
-                resultCtx.drawImage(highlighted, 0, 0, w, h);
-            }, 30); // ~30fps is smoother and less CPU intensive than 10ms
-            };
+                resultCtx.drawImage(highlighted, 0, 0, w, h)
+            }, 30)
+            }
         }
         } catch (err) {
-        console.error('Camera error:', err);
-        setStatus('Camera Error');
-        alert('Could not access camera. Please allow camera permissions.');
+        console.error('Camera error:', err)
+        alert('Could not access camera. Please allow camera permissions.')
         }
-    };
-
-    const stopCamera = () => {
-        setStatus('CAMERA SCAN');
-
-        if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-        }
-
-        if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
-        setStream(null);
-        }
-
-        if (videoRef.current) {
-        videoRef.current.srcObject = null;
-        }
-
-        // Clear canvases
-        if (canvasRef.current) {
-        canvasRef.current.width = 0;
-        canvasRef.current.height = 0;
-        }
-        if (resultCanvasRef.current) {
-        resultCanvasRef.current.width = 0;
-        resultCanvasRef.current.height = 0;
-        }
-
-        // Clear extracted papers
-        if (resultContainerRef.current) {
-        resultContainerRef.current.replaceChildren();
-        }
-    };
+    }    
 
     const capturePaper = () => {
-        if (!videoRef.current || !scannerRef.current) return;
+        if (!videoRef.current || !scannerRef.current) return
 
-        setStatus('Paper Captured');
+        const video = videoRef.current
+        const tempCanvas = document.createElement('canvas')
+        tempCanvas.width = video.videoWidth
+        tempCanvas.height = video.videoHeight
 
-        const video = videoRef.current;
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = video.videoWidth;
-        tempCanvas.height = video.videoHeight;
+        const ctx = tempCanvas.getContext('2d')
+        ctx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height)
 
-        const ctx = tempCanvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
+        const dataURL = tempCanvas.toDataURL('image/jpeg', 0.9)
 
-        const dataURL = tempCanvas.toDataURL('image/jpeg', 0.9);
-
-        const newImg = new Image();
-        newImg.src = dataURL;
+        const newImg = new Image()
+        newImg.src = dataURL
 
         newImg.onload = () => {
         const extracted = scannerRef.current.extractPaper(
             newImg,
             video.videoWidth,
             video.videoHeight
-        );
-
+        )
         // Clear previous results and show the new one
         if (resultContainerRef.current) {
-            resultContainerRef.current.replaceChildren();
-            resultContainerRef.current.appendChild(extracted);
+            resultContainerRef.current.replaceChildren()
+            resultContainerRef.current.appendChild(extracted)
         }
-        };
-    };
+        }
+    }
 
 
   
@@ -171,7 +160,7 @@ function TeacherScan(){
                             <button onClick={capturePaper} className='font-bold text-2xl leading-none bg-green-300 p-1 rounded-md'>Capture</button>
                         </div>
                     </div> 
-                    <div className='text-white p-2 text-lg md:text-2xl text-center rounded-2xl flex flex-row justify-around gap-4 h-50 md:h-full'>
+                    <div className='text-white p-2 text-lg md:text-2xl text-center rounded-2xl flex flex-row justify-around gap-4 h-fit md:h-full'>
                         {/* <div className="flex flex-col justify-center items-center w-full bg-blue-50 rounded-2xl py-5">
                             
                         </div> */}
@@ -200,8 +189,8 @@ function TeacherScan(){
                     <div>
                         <h1 className='font-bold text-2xl leading-none'>Scan Results</h1>
                     </div> 
-                    <div className='text-white p-2 text-lg md:text-2xl text-center rounded-2xl flex flex-row justify-around gap-4 h-50 md:h-full'>
-                        <div className="flex flex-col justify-center items-center w-full bg-blue-50 rounded-2xl py-5">
+                    <div className='text-white p-2 text-lg md:text-2xl text-center rounded-2xl flex flex-row justify-around gap-4 h-fit md:h-full'>
+                        <div ref={resultContainerRef} className="[&>canvas]:w-full flex flex-col justify-center items-center bg-blue-50 rounded-2xl py-5">
                             
                         </div>
                     </div>    

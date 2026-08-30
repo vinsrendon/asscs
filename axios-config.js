@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-const base =
-  import.meta.env.VITE_AXIOS_BASE_URL ||
-  `http://${window.location.hostname}:8080`;
+const base = import.meta.env.VITE_AXIOS_BASE_URL
+  ? import.meta.env.VITE_AXIOS_BASE_URL
+  : `https://${window.location.hostname}:8080`;
 
 const instance = axios.create({
   baseURL: base,
