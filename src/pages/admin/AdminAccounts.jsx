@@ -127,7 +127,7 @@ function AdminAccounts(){
                         </div>
                         <div className='flex justify-between flex-wrap text-2xl'>
                             <label className="font-bold">Phone</label>
-                            <input required minLength='11' maxLength='11' type="numeric" pattern="[0-9]*" value={selectedUser.phone} 
+                            <input className='w-full' required minLength='11' maxLength='11' type="numeric" pattern="[0-9]*" value={selectedUser.phone} 
                                 onChange={(e) =>
                                     setSelectedUser({
                                         ...selectedUser,
@@ -138,7 +138,7 @@ function AdminAccounts(){
                         </div>
                         <div className='flex justify-between flex-wrap text-2xl'>
                             <label className="font-bold">Email</label>
-                            <input className="" type='text' value={selectedUser.email}
+                            <input className="w-full" type='text' value={selectedUser.email}
                                 onChange={(e) =>
                                     setSelectedUser({
                                         ...selectedUser,
@@ -149,7 +149,7 @@ function AdminAccounts(){
                         </div>
                         <div className='flex justify-between flex-wrap text-2xl'>
                             <label className="font-bold">Password</label>
-                            <input type='password' value={selectedUser.password}
+                            <input className='w-full' type='password' value={selectedUser.password}
                                 onChange={(e) =>
                                     setSelectedUser({
                                         ...selectedUser,

@@ -1,4 +1,5 @@
 import { useState} from 'react'
+import { NavLink} from 'react-router'
 import medal from '../../assets/medal-alt.svg'
 import book from '../../assets/book-open.svg'
 import bullseye from '../../assets/bullseye.svg'
@@ -43,7 +44,7 @@ function StudentDashboard(){
                 </div>   
                 <div>
                     <p className='text-xs'>Need Help?</p>
-                    <h1 className='font-bold text-2xl text-blue-600 leading-none'>Ask AI Tutor</h1>
+                    <NavLink to="/student/assistant" className="" end><h1 className='font-bold text-2xl text-blue-600 leading-none cursor-pointer'>Ask AI Tutor</h1></NavLink>
                 </div>     
             </div>
         </div>

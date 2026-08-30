@@ -158,16 +158,16 @@ function StudentChat(){
     return(
         <>
             <div className="max-md:mt-10 flex justify-between gap-1 flex-wrap">
-                <div className='flex-1 h-112.5 overflow-y-auto border border-[#ddd] p-3 rounded-2xl'>
+                <div className='flex-1 h-60 md:h-112.5 md:min-w-45 md:max-w-46 overflow-y-auto border border-[#ddd] p-3 rounded-2xl'>
                         <div className="flex items-center justify-center gap-3 mb-5">
                             <div className='text-white bg-blue-600 p-2 rounded-2xl'>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" >
                                 <path d="m21.45 11.11-3-1.5-2.7-1.35-1.35-2.7-1.5-3c-.34-.68-1.45-.68-1.79 0l-1.5 3-1.35 2.7-2.7 1.35-3 1.5c-.34.17-.55.52-.55.89s.21.72.55.89l3 1.5 2.7 1.35 1.35 2.7 1.5 3c.17.34.52.55.89.55s.73-.21.89-.55l1.5-3 1.35-2.7 2.7-1.35 3-1.5c.34-.17.55-.52.55-.89s-.21-.72-.55-.89Zm-3.89 1.5-.84.42-2.16 1.08-.3.15-.15.3L12 18.77l-2.11-4.21-.15-.3-.3-.15-2.16-1.08-.84-.42L5.23 12l1.21-.61.84-.42 2.16-1.08.3-.15.15-.3L12 5.23l2.11 4.21.15.3.3.15 2.16 1.08.84.42 1.21.61zM19.5 1.5l-.94 2.06-2.06.94 2.06.94.94 2.06.94-2.06 2.06-.94-2.06-.94z"></path>
                                 </svg>
-                            </div>   
+                            </div>
                             <div>
                                 <h1 className='font-bold text-2xl leading-none'>AI Assistant</h1>
-                            </div>     
+                            </div>
                         </div>
                         <button onClick={initNewChat} className="cursor-pointer py-1 px-2 text-white text-center rounded-2xl w-full text-2xl font-bold bg-blue-600">New chat</button>
                         <p className='text-muted-foreground ml-1 mt-1'>History</p>
@@ -201,7 +201,7 @@ function StudentChat(){
                             )}
                         </div>
                 </div>
-                <div className="w-8/10 max-md:w-full">
+                <div className="md:flex-1 max-md:w-full">
                     <div className="h-112.5 overflow-y-auto border border-[#ddd] p-3.75 rounded-2xl">
                         {messages.map((msg, idx) => (
                         <div
