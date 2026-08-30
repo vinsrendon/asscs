@@ -1,4 +1,28 @@
-function TeacherDashboard(){    
+import { useState, useEffect } from 'react'
+import axios from '../../../axios-config.js'
+
+function TeacherDashboard(){   
+    const [isOnline, setIsOnline] = useState(true);
+    const [loading, setLoading] = useState(true);
+    useEffect(()=>{
+        const aiCheck = async() =>{
+            try {
+                const response = await axios.get('/api/chat/health', { timeout: 5000 });
+                setIsOnline(response.data.status === 'online');
+            // eslint-disable-next-line no-unused-vars
+            } catch (err) {
+                setIsOnline(false);
+            } finally{
+                setLoading(false);
+            }        
+        }
+        aiCheck()
+
+        const interval = setInterval(aiCheck, 30000);
+        return () => clearInterval(interval);
+    },[])
+
+
     return(
         <>
             <div className='max-md:mt-10 mx-2 md:mx-6'>
@@ -80,7 +104,11 @@ function TeacherDashboard(){
                             <div>
                                 <ul className="flex flex-row justify-between items-center">
                                     <li className="list-disc ml-6">Chatbot Status</li>
-                                    <li>Offline</li>
+                                    <li>
+                                        <span>
+                                            {loading ? 'Checking...' : isOnline ? 'Online' : 'Offline'}
+                                        </span>
+                                    </li>
                                 </ul>
                             </div>
                         </div>

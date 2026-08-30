@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
 import axios from '../../../axios-config.js'
-import ReactMarkdown from 'react-markdown'
 import MarkdownPreview from '@uiw/react-markdown-preview';
 
 function StudentChat(){
