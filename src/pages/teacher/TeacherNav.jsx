@@ -71,7 +71,7 @@ function TeacherNav(){
 
     return(
     <>
-        <aside className="hidden md:flex md:flex-col w-50 text-white h-full">
+        <aside className="hidden md:flex md:flex-col justify-between w-60 text-white h-full p-5 bg-[#111629]">
             <div className="flex items-center gap-3 mb-10">
                 <div className='text-white bg-[#12264F] p-2 rounded-2xl'>
                     <img src={scan} alt="scan icon"/>
