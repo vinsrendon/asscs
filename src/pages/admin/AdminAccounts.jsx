@@ -7,6 +7,9 @@ function AdminAccounts(){
     const [search, setSearch] = useState('')
     const [selected, setSelected] = useState('all')
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const [page, setPage] = useState(1)
+    const [limit, setLimit] = useState(10)
+    const [totalPages, setTotalPages] = useState(1)
 
     const options = [
         { value: 'all', label: 'All' },
@@ -17,29 +20,28 @@ function AdminAccounts(){
 
     const [users, setUsers] = useState([])
 
-    useEffect(() => {        
-        axios.get("/users")
-        .then((res) => {                
-            setUsers(res.data)          
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setPage(1)
+    }, [search, selected, limit])
+
+    useEffect(() => {
+        axios.get(`/users`, {
+            params: {
+            page,
+            limit,
+            search,
+            filter: selected
+            }
+        })
+        .then((res) => {
+            setUsers(res.data.data)
+            setTotalPages(res.data.pagination.totalPages)
         })
         .catch((err) => {
             console.error(err)
         })
-    }, [])
-
-    const filteredUsers = users.filter((user) => {
-        const matchesRole =
-            selected === "all" || (selected === "teachers" && user.role?.toLowerCase() === "teacher") || 
-            (selected === "students" && user.role?.toLowerCase() === "student") ||
-            (selected === "pendings" && user.status?.toLowerCase() === "pending")
-
-            const searchTerm = search.toLowerCase().trim()
-            const matchesSearch = !searchTerm || user.name?.toLowerCase().includes(searchTerm) ||
-            user.lname?.toLowerCase().includes(searchTerm) || `${user.name} ${user.lname}`.toLowerCase().includes(searchTerm) ||
-            user.email?.toLowerCase().includes(searchTerm) || (user.studentId && String(user.studentId).toLowerCase().includes(searchTerm))
-
-        return matchesRole && matchesSearch
-    })
+        }, [page, limit, search, selected])
 
     const [selectedUser, setSelectedUser] = useState(null)
     const [originalUser, setOriginalUser] = useState(null)
@@ -76,9 +78,17 @@ function AdminAccounts(){
             `/user/${selectedUser.uid}`,
             changedFields
         ).then((res)=>{            
-            axios.get("/users")
-                .then((res) => {                
-                    setUsers(res.data)          
+            axios.get("/users", {
+                params: {
+                    page,
+                    limit,
+                    search,
+                    filter: selected
+                }
+                })
+                .then((res) => {
+                setUsers(res.data.data)
+                setTotalPages(res.data.pagination.totalPages)
                 })
                 .catch((err) => {
                     Swal.fire({
@@ -96,7 +106,6 @@ function AdminAccounts(){
             console.error("Update failed:", err)
         })
     }
-
 
     return(
         <>
@@ -207,6 +216,41 @@ function AdminAccounts(){
                 </div>
             </div>
             <div className="mt-5 w-full overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+                <div className="flex justify-center items-center gap-4 my-4 text-sm flex-wrap">
+                    <button
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                        className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Previous
+                    </button>
+
+                    <span className="font-medium">
+                        Page {page} of {totalPages}
+                    </span>
+
+                    <button
+                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                        disabled={page >= totalPages}
+                        className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Next
+                    </button>
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-600">Show</span>
+                        <select
+                        value={limit}
+                        onChange={(e) => setLimit(Number(e.target.value))}
+                        className="px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value={5}>5</option>
+                            <option value={10}>10</option>
+                            <option value={20}>20</option>
+                            <option value={50}>50</option>
+                        </select>
+                        <span className="text-sm text-gray-600">entries</span>
+                    </div>
+                </div>
                 <table className="w-full text-left text-sm text-gray-600">
                     <thead className="bg-gray-50 text-xs uppercase text-gray-700 text-center">
                     <tr>
@@ -221,7 +265,7 @@ function AdminAccounts(){
 
                     <tbody className="divide-y divide-gray-200 text-center">
                     {
-                        filteredUsers.map((user) => (
+                        users.map((user) => (
                             <tr key={user.uid} className={
                                 user.status === 'PENDING' || user.status === 'INACTIVE' ? "bg-red-300 hover:bg-red-200 transition-colors" : "hover:bg-current/5 transition-colors"}>
                                 <td className="px-6 py-4 font-medium text-gray-900">
@@ -264,6 +308,41 @@ function AdminAccounts(){
                     }
                     </tbody>
                 </table>
+                <div className="flex justify-center items-center text-sm gap-4 my-4 flex-wrap">
+                    <button
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                        className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Previous
+                    </button>
+
+                    <span className="font-medium">
+                        Page {page} of {totalPages}
+                    </span>
+
+                    <button
+                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                        disabled={page >= totalPages}
+                        className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Next
+                    </button>
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-600">Show</span>
+                        <select
+                        value={limit}
+                        onChange={(e) => setLimit(Number(e.target.value))}
+                        className="px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value={5}>5</option>
+                            <option value={10}>10</option>
+                            <option value={20}>20</option>
+                            <option value={50}>50</option>
+                        </select>
+                        <span className="text-sm text-gray-600">entries</span>
+                    </div>
+                </div>
             </div>
         </>        
     )

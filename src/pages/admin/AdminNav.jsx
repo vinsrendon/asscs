@@ -20,8 +20,7 @@ function AdminNav(){
             } 
             else {
                 axios.get('/verify',{}).then((res)=>{
-                console.log(res.data);
-                
+                                    
                 localStorage.setItem('name',res.data.user.name)  
                 localStorage.setItem('role',res.data.user.role)  
                 
