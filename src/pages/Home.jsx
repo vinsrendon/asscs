@@ -89,7 +89,7 @@ function Home(){
         <main className="min-h-screen w-full flex">     
             <section className="w-full lg:w-120 flex flex-col justify-center px-8 sm:px-16 bg-background relative z-10 overflow-y-auto py-10">
                 <div className="w-full max-w-sm mx-auto">
-                    <div className="flex items-center gap-3 mb-10">
+                    <div className="flex items-center justify-center gap-3 mb-10">
                         <div className='bg-primary p-3 rounded-4xl shadow-lg shadow-primary/30'>
                             <img src={scan} alt="scan icon" />
                         </div>   
@@ -99,7 +99,7 @@ function Home(){
                         </div>     
                     </div>
                     <div>
-                        <div className="mb-7">
+                        <div className="mb-7 text-center">
                             <h2 className="text-3xl font-bold text-foreground mb-1">Welcome back</h2>
                             <p className="text-muted-foreground text-sm">Sign in to access your dashboard.</p>
                         </div>

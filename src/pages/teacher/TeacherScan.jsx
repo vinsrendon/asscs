@@ -25,17 +25,16 @@ function TeacherScan(){
         videoRef.current.srcObject = null
         }
 
-        // Clear canvases
         if (canvasRef.current) {
         canvasRef.current.width = 0
         canvasRef.current.height = 0
         }
+
         if (resultCanvasRef.current) {
         resultCanvasRef.current.width = 0
         resultCanvasRef.current.height = 0
         }
 
-        // Clear extracted papers
         if (resultContainerRef.current) {
         resultContainerRef.current.replaceChildren()
         }
@@ -58,7 +57,7 @@ function TeacherScan(){
         try {
         const mediaStream = await navigator.mediaDevices.getUserMedia({
             video: {
-            facingMode: 'environment', // prefer rear camera
+            facingMode: 'environment',
             width: { ideal: 1280 },
             height: { ideal: 720 },
             },
@@ -84,7 +83,6 @@ function TeacherScan(){
 
             video.play()
 
-            // Continuous paper highlighting
             intervalRef.current = setInterval(() => {
                 if (!scannerRef.current || !video || video.readyState < 2) return
 
@@ -130,15 +128,13 @@ function TeacherScan(){
             video.videoWidth,
             video.videoHeight
         )
-        // Clear previous results and show the new one
+
         if (resultContainerRef.current) {
             resultContainerRef.current.replaceChildren()
             resultContainerRef.current.appendChild(extracted)
         }
         }
     }
-
-
   
     return(
         <>
@@ -150,7 +146,7 @@ function TeacherScan(){
                 </p>
                 </div>
             </div> 
-            <div className='my-6 mx-2 md:mx-6 rounded-2xl flex justify-around gap-4 h-1/2 max-lg:flex-wrap'>
+            <div className='my-6 mx-2 md:mx-6 rounded-2xl flex justify-around gap-4 h-1/2 max-xl:flex-wrap'>
                 <div className="flex flex-col flex-1 gap-3 p-5 rounded-2xl shadow-sm shadow-gray-300 max-lg:w-full">                       
                     <div className="flex gap-2 max-md:flex-col justify-between">
                         <h1 className='font-bold text-2xl leading-none'>Camera</h1>
@@ -161,26 +157,11 @@ function TeacherScan(){
                         </div>
                     </div> 
                     <div className='text-white p-2 text-lg md:text-2xl text-center rounded-2xl flex flex-row justify-around gap-4 h-fit md:h-full'>
-                        {/* <div className="flex flex-col justify-center items-center w-full bg-blue-50 rounded-2xl py-5">
-                            
-                        </div> */}
                         <div className="relative w-full bg-blue-50 rounded-2xl overflow-hidden">
-                            {/* Hidden video element */}
-                            <video
-                            ref={videoRef}
-                            autoPlay
-                            playsInline
-                            muted
-                            className="absolute inset-0 w-full h-full object-cover opacity-0"
-                            />
+                            <video ref={videoRef} autoPlay playsInline muted className="absolute inset-0 w-full h-full object-cover opacity-0"/>
 
-                            {/* Live highlighted paper view */}
-                            <canvas
-                            ref={resultCanvasRef}
-                            className="w-full h-full object-contain"
-                            />
+                            <canvas ref={resultCanvasRef} className="w-full h-full object-contain" />
 
-                            {/* Hidden working canvas */}
                             <canvas ref={canvasRef} className="hidden" />
                         </div>
                     </div>    
@@ -190,9 +171,7 @@ function TeacherScan(){
                         <h1 className='font-bold text-2xl leading-none'>Scan Results</h1>
                     </div> 
                     <div className='text-white p-2 text-lg md:text-2xl text-center rounded-2xl flex flex-row justify-around gap-4 h-fit md:h-full'>
-                        <div ref={resultContainerRef} className="[&>canvas]:w-full flex flex-col justify-center items-center bg-blue-50 rounded-2xl py-5">
-                            
-                        </div>
+                        <div ref={resultContainerRef} className="[&>canvas]:w-full [&>canvas]:h-full [&>canvas]:object-contain flex flex-col justify-center items-center bg-blue-50 rounded-2xl py-5"></div>
                     </div>    
                 </div>
             </div> 
