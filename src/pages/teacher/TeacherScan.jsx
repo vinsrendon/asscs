@@ -298,12 +298,74 @@ function TeacherScan(){
             (c.rect.width / c.rect.height) < 1.40
         )
 
-        const allX = bubbles.map(b => b.x)
-        const midX = (Math.min(...allX) + Math.max(...allX)) / 2
+        // const allX = bubbles.map(b => b.x)
+        // const midX = (Math.min(...allX) + Math.max(...allX)) / 2
 
-        const leftColumn  = bubbles.filter(b => b.x < midX).sort((a, b) => a.y - b.y)
-        const rightColumn = bubbles.filter(b => b.x >= midX).sort((a, b) => a.y - b.y)
+        // const leftColumn  = bubbles.filter(b => b.x < midX).sort((a, b) => a.y - b.y)
+        // const rightColumn = bubbles.filter(b => b.x >= midX).sort((a, b) => a.y - b.y)
 
+
+
+
+        // ============================================
+        // AUTOMATIC COLUMN DETECTION
+        // ============================================
+
+        const sortedByX = [...bubbles].sort((a, b) => a.x - b.x)
+
+        // Find gaps between neighboring bubble centers
+        const xGaps = []
+
+        for (let i = 1; i < sortedByX.length; i++) {
+            xGaps.push({
+                gap: sortedByX[i].x - sortedByX[i - 1].x,
+                index: i
+            })
+        }
+
+        // A column gap should be significantly larger than
+        // the normal spacing between bubbles in the same column.
+        const normalGap = medianSize * 2.5
+        const columnGap = medianSize * 5
+
+        const splitPoints = xGaps
+            .filter(g => g.gap > columnGap)
+            .map(g => g.index)
+
+        // Split bubbles into columns
+        const columns = []
+
+        let start = 0
+
+        for (const split of splitPoints) {
+            const column = sortedByX
+                .slice(start, split)
+                .sort((a, b) => a.y - b.y)
+
+            if (column.length >= 4) {
+                columns.push(column)
+            }
+
+            start = split
+        }
+
+        // Last column
+        const lastColumn = sortedByX
+            .slice(start)
+            .sort((a, b) => a.y - b.y)
+
+        if (lastColumn.length >= 4) {
+            columns.push(lastColumn)
+        }
+
+        // Sort columns from left → right
+        columns.sort((a, b) => {
+            const ax = a.reduce((sum, bubble) => sum + bubble.x, 0) / a.length
+            const bx = b.reduce((sum, bubble) => sum + bubble.x, 0) / b.length
+
+            return ax - bx
+        })
+        //END 
         const processColumn = (columnBubbles, startQ = 1) => {
             const OPTIONS = 4
             const labels = ['A', 'B', 'C', 'D']
@@ -375,10 +437,27 @@ function TeacherScan(){
             return results
         }
 
-        const leftResults  = processColumn(leftColumn, 1)
-        const rightResults = processColumn(rightColumn, leftResults.length + 1)
+        // const leftResults  = processColumn(leftColumn, 1)
+        // const rightResults = processColumn(rightColumn, leftResults.length + 1)
 
-        const allResults = [...leftResults, ...rightResults]
+        // const allResults = [...leftResults, ...rightResults]
+
+
+        // ============================================
+        // PROCESS AUTOMATICALLY DETECTED COLUMNS
+        // ============================================
+
+        const allResults = []
+
+        let questionNumber = 1
+
+        for (const column of columns) {
+            const results = processColumn(column, questionNumber)
+
+            allResults.push(...results)
+
+            questionNumber += results.length
+        }   
 
         const debugCanvas = document.createElement('canvas')
         cv.imshow(debugCanvas, display)
