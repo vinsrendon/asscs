@@ -6,7 +6,7 @@ function TeacherScan(){
     const canvasRef = useRef(null)
     const resultCanvasRef = useRef(null)
     const fileInputRef = useRef(null)
-    // const [answers, setAnswers] = useState([])
+    const [showResultImage, setShowResultImage] = useState(false)
 
     const [isUploading, setIsUploading] = useState(false)
     const [isCameraOn, setIsCameraOn] = useState(false)
@@ -65,6 +65,7 @@ function TeacherScan(){
 
         if (resultImageRef.current) {
             resultImageRef.current.srcObject = null
+            setShowResultImage(false)
         }
     }
 
@@ -315,11 +316,9 @@ function TeacherScan(){
             const group = columnBubbles.slice(i, i + OPTIONS)
             if (group.length < OPTIONS) break
 
-            // Check horizontal alignment
             const avgY = group.reduce((s, b) => s + b.y, 0) / group.length
             if (!group.every(b => Math.abs(b.y - avgY) < medianSize * 1.1)) continue
 
-            // Left → right
             group.sort((a, b) => a.x - b.x)
 
             const fills = []
@@ -330,11 +329,9 @@ function TeacherScan(){
                 cntVec.push_back(bubble.contour)
                 cv.drawContours(mask, cntVec, -1, new cv.Scalar(255), -1)
 
-                // Mean intensity inside the bubble (darker = lower number)
                 const mean = cv.mean(gray, mask)[0]
                 fills.push(mean)
 
-                // Draw green box + darkness value
                 const r = bubble.rect
                 cv.rectangle(display,
                 new cv.Point(r.x, r.y),
@@ -382,7 +379,6 @@ function TeacherScan(){
         const rightResults = processColumn(rightColumn, leftResults.length + 1)
 
         const allResults = [...leftResults, ...rightResults]
-        // console.table(allResults)
 
         const debugCanvas = document.createElement('canvas')
         cv.imshow(debugCanvas, display)
@@ -391,6 +387,7 @@ function TeacherScan(){
 
         if (resultImageRef.current) {
             resultImageRef.current.src = imageSrc
+            setShowResultImage(true)
         }
 
         src.delete()
@@ -458,7 +455,7 @@ function TeacherScan(){
                     </div> 
                     <div className='text-white p-2 text-lg md:text-2xl text-center rounded-2xl flex flex-row justify-around gap-4 h-fit md:h-full'>
                         <div className="flex flex-col justify-center items-center bg-blue-50 rounded-2xl py-5">
-                            <img ref={resultImageRef} alt="scanned page result" className='w-full h-full object-contain' />
+                            <img ref={resultImageRef} alt="scanned page result" className={`w-full h-full ${showResultImage ? 'block object-contain':'hidden object-contain'}`} />
                         </div>
                     </div>
                 </div>
