@@ -96,14 +96,6 @@ function TeacherDashboard(){
                         <h1 className='font-bold text-2xl leading-none'>System Status</h1>
                     </div> 
                     <div className='text-white p-2 text-md md:text-lg text-center rounded-2xl flex flex-col justify-around gap-4 font-bold'>
-                        <div className="bg-green-50 text-green-500 rounded-2xl p-2">
-                            <div>
-                                <ul className="flex flex-row justify-between items-center">
-                                    <li className="list-disc ml-6">Scanner Status</li>
-                                    <li>Offline</li>
-                                </ul>
-                            </div>
-                        </div>
                         <div className="bg-blue-50 text-blue-500 rounded-2xl p-2">
                             <div>
                                 <ul className="flex flex-row justify-between items-center">
