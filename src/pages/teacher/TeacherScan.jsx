@@ -325,7 +325,7 @@ function TeacherScan(){
 
         // A column gap should be significantly larger than
         // the normal spacing between bubbles in the same column.
-        const normalGap = medianSize * 2.5
+        // const normalGap = medianSize * 2.5
         const columnGap = medianSize * 5
 
         const splitPoints = xGaps
