@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from 'react'
 import Swal from 'sweetalert2'
+import { createWorker } from 'tesseract.js'
 
 function TeacherScan(){  
     const videoRef = useRef(null)
@@ -214,7 +215,91 @@ function TeacherScan(){
         }
     }
 
-    const processShadedSheet = (extractedCanvas) => {
+    const extractStudentIdNumber = async (src, cv) => {
+        const gray = new cv.Mat()
+        const thresh = new cv.Mat()
+        
+        // 1. Convert to Grayscale & Adaptive Threshold to handle lighting variations
+        cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY)
+        cv.adaptiveThreshold(
+            gray,
+            thresh,
+            255,
+            cv.ADAPTIVE_THRESH_GAUSSIAN_C,
+            cv.THRESH_BINARY_INV,
+            15,
+            8
+        )
+
+        const contours = new cv.MatVector()
+        const hierarchy = new cv.Mat()
+        cv.findContours(thresh, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+
+        let topRect = null
+        const maxYThreshold = src.rows * 0.35 // Look within the top 35% of the paper
+
+        for (let i = 0; i < contours.size(); i++) {
+            const rect = cv.boundingRect(contours.get(i))
+            const aspect = rect.width / rect.height
+
+            // Relaxed matching for the ID container box
+            if (rect.y < maxYThreshold && rect.width > 80 && rect.height > 20 && aspect > 1.8) {
+                if (!topRect || rect.width > topRect.width) {
+                    topRect = rect
+                }
+            }
+        }
+
+        // Cleanup OpenCV mats
+        thresh.delete()
+        contours.delete()
+        hierarchy.delete()
+
+        let croppedMat
+        if (topRect) {
+            const rect = new cv.Rect(topRect.x, topRect.y, topRect.width, topRect.height)
+            croppedMat = src.roi(rect)
+        } else {
+            // Fallback: If no box detected, default crop the top 20% area where Student ID usually sits
+            const fallbackRect = new cv.Rect(0, 0, src.cols, Math.floor(src.rows * 0.20))
+            croppedMat = src.roi(fallbackRect)
+        }
+
+        // 2. Prepare high-resolution offscreen canvas for Tesseract
+        const cropCanvas = document.createElement('canvas')
+        const scaleFactor = 2 // Upscale ROI to assist Tesseract OCR recognition
+        cropCanvas.width = croppedMat.cols * scaleFactor
+        cropCanvas.height = croppedMat.rows * scaleFactor
+
+        const tempCanvas = document.createElement('canvas')
+        cv.imshow(tempCanvas, croppedMat)
+        
+        const ctx = cropCanvas.getContext('2d')
+        ctx.imageSmoothingEnabled = true
+        ctx.drawImage(tempCanvas, 0, 0, cropCanvas.width, cropCanvas.height)
+
+        gray.delete()
+        croppedMat.delete()
+
+        // 3. OCR Processing with Tesseract
+        try {
+            const worker = await createWorker('eng')
+            await worker.setParameters({
+                tessedit_char_whitelist: '0123456789-', // Allow numbers and dashes
+                tessedit_pageseg_mode: '7'             // Single uniform line of text
+            })
+
+            const { data: { text } } = await worker.recognize(cropCanvas)
+            await worker.terminate()
+
+            return text.replace(/\D/g, '') // Strip non-digit characters
+        } catch (err) {
+            console.error("OCR Extraction Error:", err)
+            return ""
+        }
+    }
+
+    const processShadedSheet = async(extractedCanvas) => {
         const cv = window.cv
         if (!cv || !extractedCanvas) {
             Swal.fire({
@@ -225,6 +310,11 @@ function TeacherScan(){
         }
 
         const src = cv.imread(extractedCanvas)
+
+        // Extract Student ID
+        const studentId = await extractStudentIdNumber(src, cv)
+        console.log("Extracted Student ID:", studentId)
+
         const display = src.clone()
         const gray = new cv.Mat()
         const blurred = new cv.Mat()

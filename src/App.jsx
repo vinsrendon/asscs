@@ -18,6 +18,7 @@ import TeacherScan from './pages/teacher/TeacherScan'
 import TeacherAnswerKeys from './pages/teacher/TeacherAnswerKeys'
 import TeacherStudents from './pages/teacher/TeacherStudents'
 import TeacherResult from './pages/teacher/TeacherResult'
+import ApplicantRegistration from './pages/ApplicantRegistration'
 
 function App() {
   return (
@@ -27,17 +28,24 @@ function App() {
           <Route path="/register" element={<Register/>} />          
           <Route path="/studdentregistration" element={<StudentRegistration/>} />          
           <Route path="/teacherregistration" element={<TeacherRegisration/>} />   
+          <Route path="/applicantregistration" element={<ApplicantRegistration/>} />   
 
           <Route path="/admin" element={<RouteGuard allowedRoles={["ADMIN"]} ><AdminLayout /></RouteGuard>}>            
               <Route index element={<AdminDashboard />} />
               <Route path="accounts" element={<AdminAccounts />} />        
           </Route>
 
-          <Route path="/student" element={<RouteGuard allowedRoles={["STUDENT"]} ><StudentLayout /></RouteGuard>}>            
+          <Route path="/student" element={<RouteGuard allowedRoles={["STUDENT","APPLICANT"]} ><StudentLayout /></RouteGuard>}>            
               <Route index element={<StudentDashboard />} />
               <Route path="results" element={<StudentResults />} />
               <Route path="performance" element={<StudentPerformance />} />
               <Route path="assistant" element={<StudentChat />} />         
+          </Route>
+
+          <Route path="/applicant" element={<RouteGuard allowedRoles={["APPLICANT"]} ><StudentLayout /></RouteGuard>}>            
+              <Route index element={<StudentDashboard />} />
+              <Route path="results" element={<StudentResults />} />
+              <Route path="performance" element={<StudentPerformance />} /> 
           </Route>
 
           <Route path="/teacher" element={<RouteGuard allowedRoles={["TEACHER"]} ><TeacherLayout /></RouteGuard>}>            

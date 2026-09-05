@@ -41,7 +41,7 @@ function AdminAccounts(){
         .catch((err) => {
             console.error(err)
         })
-        }, [page, limit, search, selected])
+    }, [page, limit, search, selected])
 
     const [selectedUser, setSelectedUser] = useState(null)
     const [originalUser, setOriginalUser] = useState(null)
@@ -254,12 +254,14 @@ function AdminAccounts(){
                 <table className="w-full text-left text-sm text-gray-600">
                     <thead className="bg-gray-50 text-xs uppercase text-gray-700 text-center">
                     <tr>
-                        <th className="px-6 py-4 font-semibold">Name</th>
-                        <th className="px-6 py-4 font-semibold">Email</th>
-                        <th className="px-6 py-4 font-semibold">Role</th>
-                        <th className="px-6 py-4 font-semibold">Student ID</th>
-                        <th className="px-6 py-4 font-semibold">Course</th>
-                        <th className="px-6 py-4 text-center font-semibold">Action</th>
+                        <th className="px-1 py-4 font-semibold">First Name</th>
+                        <th className="px-1 py-4 font-semibold">Last Name</th>
+                        <th className="px-1 py-4 font-semibold">Email</th>
+                        <th className="px-1 py-4 font-semibold">Role</th>
+                        <th className="px-1 py-4 font-semibold">Student ID</th>
+                        <th className="px-1 py-4 font-semibold">Applicant ID</th>
+                        <th className="px-1 py-4 font-semibold">Course</th>
+                        <th className="px-1 py-4 text-center font-semibold">Action</th>
                     </tr>
                     </thead>
 
@@ -268,11 +270,14 @@ function AdminAccounts(){
                         users.map((user) => (
                             <tr key={user.uid} className={
                                 user.status === 'PENDING' || user.status === 'INACTIVE' ? "bg-red-300 hover:bg-red-200 transition-colors" : "hover:bg-current/5 transition-colors"}>
-                                <td className="px-6 py-4 font-medium text-gray-900">
-                                    {user.fname} {user.lname}
+                                <td className="px-6 py-4 font-medium text-left text-gray-900">
+                                    {user.fname}
+                                </td>
+                                <td className="px-6 py-4 font-medium text-left text-gray-900">
+                                    {user.lname}
                                 </td>
 
-                                <td className="px-6 py-4">
+                                <td className="px-6 py-4 text-left">
                                     {user.email}
                                 </td>
 
@@ -284,6 +289,10 @@ function AdminAccounts(){
 
                                 <td className="px-6 py-4">
                                     {user.student_id? user.student_id:"-"}
+                                </td>
+
+                                <td className="px-6 py-4">
+                                    {user.applicant_id? user.applicant_id:"-"}
                                 </td>
 
                                 <td className="px-6 py-4">

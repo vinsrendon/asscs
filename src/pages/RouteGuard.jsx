@@ -53,6 +53,8 @@ function RoleRedirect({ role }) {
 
     case "STUDENT":
       return <Navigate to="/student" replace />;
+    case "APPLICANT":
+      return <Navigate to="/applicant" replace />;
 
     default:
       return <Navigate to="/" replace />;

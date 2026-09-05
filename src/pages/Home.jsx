@@ -35,6 +35,9 @@ function Home(){
                     case "STUDENT":
                     return navigate('/student')
 
+                    case "APPLICANT":
+                    return navigate('/applicant')
+
                     default:
                     return navigate('/')
                 }

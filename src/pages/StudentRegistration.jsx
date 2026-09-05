@@ -129,7 +129,7 @@ function StudentRegistration(){
                         <div className="mb-2">
                             <div className='flex items-center gap-2 mb-1'>
                                 <img src={hat} alt="hat icon"/>
-                                <span className='text-xs font-semibold uppercase tracking-widest text-primary'>APPLICANT REGISTRATION</span>
+                                <span className='text-xs font-semibold uppercase tracking-widest text-primary'>STUDENT REGISTRATION</span>
                             </div>
                             <h2 className='text-2xl font-bold text-foreground'>Create your account</h2>
                             <p className='text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2'>Your account will require admin approval before you can log in.</p>
