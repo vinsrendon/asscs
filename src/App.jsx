@@ -35,7 +35,7 @@ function App() {
               <Route path="accounts" element={<AdminAccounts />} />        
           </Route>
 
-          <Route path="/student" element={<RouteGuard allowedRoles={["STUDENT","APPLICANT"]} ><StudentLayout /></RouteGuard>}>            
+          <Route path="/student" element={<RouteGuard allowedRoles={["STUDENT"]} ><StudentLayout /></RouteGuard>}>            
               <Route index element={<StudentDashboard />} />
               <Route path="results" element={<StudentResults />} />
               <Route path="performance" element={<StudentPerformance />} />

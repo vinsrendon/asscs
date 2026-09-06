@@ -5,6 +5,7 @@ import Swal from 'sweetalert2'
 
 function AdminAccounts(){
     const [search, setSearch] = useState('')
+    const [searchInput, setSearchInput] = useState('')
     const [selected, setSelected] = useState('all')
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [page, setPage] = useState(1)
@@ -15,7 +16,9 @@ function AdminAccounts(){
         { value: 'all', label: 'All' },
         { value: 'teachers', label: 'Teachers' },
         { value: 'students', label: 'Students' },
+        { value: 'applicants', label: 'Applicants' },
         { value: 'pendings', label: 'Pendings' },
+        { value: 'inactive', label: 'Inactives' }
     ]
 
     const [users, setUsers] = useState([])
@@ -105,6 +108,12 @@ function AdminAccounts(){
         }).catch((err) => {
             console.error("Update failed:", err)
         })
+    }
+
+    const handleSearch = (e) => {
+        if (e.key === 'Enter') {
+            setSearch(e.target.value)
+        }
     }
 
     return(
@@ -199,7 +208,7 @@ function AdminAccounts(){
                 </div>
             </div>
             <div className='mt-5 flex flex-wrap max-md:flex-col justify-between gap-1'>
-                <input className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" required placeholder="Search by name, email, or student ID..." type="text" value={search} onChange={(e) => setSearch(e.target.value)}/>
+                <input className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" required placeholder="Search by name, email, or student ID..." type="text" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} onKeyDown={handleSearch}/>
 
                 <div className="flex gap-2 flex-wrap">
                     {options.map((opt) => (
@@ -269,7 +278,7 @@ function AdminAccounts(){
                     {
                         users.map((user) => (
                             <tr key={user.uid} className={
-                                user.status === 'PENDING' || user.status === 'INACTIVE' ? "bg-red-300 hover:bg-red-200 transition-colors" : "hover:bg-current/5 transition-colors"}>
+                                user.status === 'PENDING' ? "bg-red-300 hover:bg-red-200 transition-colors" : "hover:bg-current/5 transition-colors"}>
                                 <td className="px-6 py-4 font-medium text-left text-gray-900">
                                     {user.fname}
                                 </td>
@@ -304,11 +313,6 @@ function AdminAccounts(){
                                     <svg onClick={() => {editUser(user)}} className='cursor-pointer fill-muted-foreground'  xmlns="http://www.w3.org/2000/svg" width="24" height="24"  
                                     fill="none" viewBox="0 0 24 24" >
                                     <path d="M19.67 2.61c-.81-.81-2.14-.81-2.95 0L3.38 15.95c-.13.13-.22.29-.26.46l-1.09 4.34c-.08.34.01.7.26.95.19.19.45.29.71.29.08 0 .16 0 .24-.03l4.34-1.09c.18-.04.34-.13.46-.26L21.38 7.27c.81-.81.81-2.14 0-2.95L19.66 2.6ZM6.83 19.01l-2.46.61.61-2.46 9.96-9.94 1.84 1.84zM19.98 5.86 18.2 7.64 16.36 5.8l1.78-1.78s.09-.03.12 0l1.72 1.72s.03.09 0 .12"></path>
-                                    </svg>
-
-                                    <svg className='fill-muted-foreground'  xmlns="http://www.w3.org/2000/svg" width="24" height="24"  
-                                    fill="none" viewBox="0 0 24 24" >                            
-                                    <path d="M17 6V4c0-1.1-.9-2-2-2H9c-1.1 0-2 .9-2 2v2H2v2h2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8h2V6zM9 4h6v2H9zM6 20V8h12v12z"></path><path d="M9 10h2v8H9zm4 0h2v8h-2z"></path>
                                     </svg>
                                 </div>
                                 </td>

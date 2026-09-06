@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from 'react'
 import Swal from 'sweetalert2'
-import { createWorker } from 'tesseract.js'
+import { PaddleOcrService } from 'ppu-paddle-ocr/web'
+
 
 function TeacherScan(){  
     const videoRef = useRef(null)
@@ -8,9 +9,14 @@ function TeacherScan(){
     const resultCanvasRef = useRef(null)
     const fileInputRef = useRef(null)
     const [showResultImage, setShowResultImage] = useState(false)
-
     const [isUploading, setIsUploading] = useState(false)
     const [isCameraOn, setIsCameraOn] = useState(false)
+    const [answers, setAnswers] = useState([])
+
+    const ocrRef = useRef(null)
+    // eslint-disable-next-line no-unused-vars
+    const [isOcrReady, setIsOcrReady] = useState(false)    
+
     const intervalRef = useRef(null)
     const scannerRef = useRef(null)
     const resultImageRef = useRef(null)
@@ -45,6 +51,7 @@ function TeacherScan(){
     const clearResult = () => {
         setIsCameraOn(false)
         setIsUploading(false)
+        setAnswers([])
         if (intervalRef.current) {
             clearInterval(intervalRef.current)
             intervalRef.current = null
@@ -74,11 +81,22 @@ function TeacherScan(){
         if (window.jscanify) {
         scannerRef.current = new window.jscanify()
         } else {
-        console.error('jscanify is not loaded. Please include the library.')
+            console.error('jscanify is not loaded')
         }
 
+        const ocr = new PaddleOcrService()
+        ocr.initialize()
+            .then(() => {
+                ocrRef.current = ocr
+                setIsOcrReady(true)
+            })
+            .catch((err) => console.error('PaddleOCR failed to initialize:', err))
+
         return () => {
-        stopCamera()
+            stopCamera()
+            if (ocrRef.current) {
+                ocrRef.current.destroy()
+            }
         }
     }, [])
 
@@ -216,10 +234,15 @@ function TeacherScan(){
     }
 
     const extractStudentIdNumber = async (src, cv) => {
+        if (!ocrRef.current) {
+            console.warn("PaddleOCR service is not initialized yet.")
+            return ""
+        }
+
         const gray = new cv.Mat()
         const thresh = new cv.Mat()
         
-        // 1. Convert to Grayscale & Adaptive Threshold to handle lighting variations
+        // 1. Convert to Grayscale & Adaptive Threshold to locate ID bounding box
         cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY)
         cv.adaptiveThreshold(
             gray,
@@ -242,7 +265,6 @@ function TeacherScan(){
             const rect = cv.boundingRect(contours.get(i))
             const aspect = rect.width / rect.height
 
-            // Relaxed matching for the ID container box
             if (rect.y < maxYThreshold && rect.width > 80 && rect.height > 20 && aspect > 1.8) {
                 if (!topRect || rect.width > topRect.width) {
                     topRect = rect
@@ -250,7 +272,6 @@ function TeacherScan(){
             }
         }
 
-        // Cleanup OpenCV mats
         thresh.delete()
         contours.delete()
         hierarchy.delete()
@@ -260,14 +281,14 @@ function TeacherScan(){
             const rect = new cv.Rect(topRect.x, topRect.y, topRect.width, topRect.height)
             croppedMat = src.roi(rect)
         } else {
-            // Fallback: If no box detected, default crop the top 20% area where Student ID usually sits
+            // Fallback: Default crop top 20% area
             const fallbackRect = new cv.Rect(0, 0, src.cols, Math.floor(src.rows * 0.20))
             croppedMat = src.roi(fallbackRect)
         }
 
-        // 2. Prepare high-resolution offscreen canvas for Tesseract
+        // 2. Prepare canvas for PaddleOCR
         const cropCanvas = document.createElement('canvas')
-        const scaleFactor = 2 // Upscale ROI to assist Tesseract OCR recognition
+        const scaleFactor = 2 
         cropCanvas.width = croppedMat.cols * scaleFactor
         cropCanvas.height = croppedMat.rows * scaleFactor
 
@@ -281,20 +302,14 @@ function TeacherScan(){
         gray.delete()
         croppedMat.delete()
 
-        // 3. OCR Processing with Tesseract
+        // 3. Perform local OCR using PaddleOCR
         try {
-            const worker = await createWorker('eng')
-            await worker.setParameters({
-                tessedit_char_whitelist: '0123456789-', // Allow numbers and dashes
-                tessedit_pageseg_mode: '7'             // Single uniform line of text
-            })
-
-            const { data: { text } } = await worker.recognize(cropCanvas)
-            await worker.terminate()
-
-            return text.replace(/\D/g, '') // Strip non-digit characters
+            const ocrResult = await ocrRef.current.recognize(cropCanvas)
+            const rawText = ocrResult?.text || ""
+            
+            return rawText.replace(/\D/g, '') // Strip non-digits
         } catch (err) {
-            console.error("OCR Extraction Error:", err)
+            console.error("PaddleOCR Extraction Error:", err)
             return ""
         }
     }
@@ -388,22 +403,8 @@ function TeacherScan(){
             (c.rect.width / c.rect.height) < 1.40
         )
 
-        // const allX = bubbles.map(b => b.x)
-        // const midX = (Math.min(...allX) + Math.max(...allX)) / 2
-
-        // const leftColumn  = bubbles.filter(b => b.x < midX).sort((a, b) => a.y - b.y)
-        // const rightColumn = bubbles.filter(b => b.x >= midX).sort((a, b) => a.y - b.y)
-
-
-
-
-        // ============================================
-        // AUTOMATIC COLUMN DETECTION
-        // ============================================
-
         const sortedByX = [...bubbles].sort((a, b) => a.x - b.x)
 
-        // Find gaps between neighboring bubble centers
         const xGaps = []
 
         for (let i = 1; i < sortedByX.length; i++) {
@@ -413,16 +414,12 @@ function TeacherScan(){
             })
         }
 
-        // A column gap should be significantly larger than
-        // the normal spacing between bubbles in the same column.
-        // const normalGap = medianSize * 2.5
         const columnGap = medianSize * 5
 
         const splitPoints = xGaps
             .filter(g => g.gap > columnGap)
             .map(g => g.index)
 
-        // Split bubbles into columns
         const columns = []
 
         let start = 0
@@ -439,7 +436,6 @@ function TeacherScan(){
             start = split
         }
 
-        // Last column
         const lastColumn = sortedByX
             .slice(start)
             .sort((a, b) => a.y - b.y)
@@ -448,14 +444,13 @@ function TeacherScan(){
             columns.push(lastColumn)
         }
 
-        // Sort columns from left → right
         columns.sort((a, b) => {
             const ax = a.reduce((sum, bubble) => sum + bubble.x, 0) / a.length
             const bx = b.reduce((sum, bubble) => sum + bubble.x, 0) / b.length
 
             return ax - bx
         })
-        //END 
+
         const processColumn = (columnBubbles, startQ = 1) => {
             const OPTIONS = 4
             const labels = ['A', 'B', 'C', 'D']
@@ -527,16 +522,6 @@ function TeacherScan(){
             return results
         }
 
-        // const leftResults  = processColumn(leftColumn, 1)
-        // const rightResults = processColumn(rightColumn, leftResults.length + 1)
-
-        // const allResults = [...leftResults, ...rightResults]
-
-
-        // ============================================
-        // PROCESS AUTOMATICALLY DETECTED COLUMNS
-        // ============================================
-
         const allResults = []
 
         let questionNumber = 1
@@ -567,8 +552,10 @@ function TeacherScan(){
         contours.delete()
         hierarchy.delete()
 
+        setAnswers(allResults)
+
         return allResults
-    }
+    }    
   
     return(
         <>
@@ -622,9 +609,58 @@ function TeacherScan(){
                             <button onClick={clearResult} className='cursor-pointer font-bold text-2xl leading-none bg-yellow-300 hover:bg-yellow-400 p-1 rounded-md'>Clear</button>
                         </div>
                     </div> 
-                    <div className='text-white p-2 text-lg md:text-2xl text-center rounded-2xl flex flex-row justify-around gap-4 h-fit md:h-full'>
-                        <div className="flex flex-col justify-center items-center bg-blue-50 rounded-2xl py-5">
-                            <img ref={resultImageRef} alt="scanned page result" className={`w-full h-full ${showResultImage ? 'block object-contain':'hidden object-contain'}`} />
+                    <div className='text-white p-2 text-lg md:text-2xl text-center rounded-2xl flex md:flex-row flex-wrap justify-around gap-4 h-fit md:h-full'>                        
+                        <div className={`justify-center items-center bg-blue-50 rounded-2xl py-5 w-full ${showResultImage ? 'flex':'hidden'}`}>
+                            {answers.length > 0 ? (
+                                <div className="w-full overflow-auto max-h-125">
+                                    <table className="w-full border-collapse text-gray-800">
+                                        <thead className="sticky top-0 bg-blue-200">
+                                            <tr>
+                                                <th className="border border-gray-300 px-4 py-2 text-center">
+                                                    Question
+                                                </th>
+                                                <th className="border border-gray-300 px-4 py-2 text-center">
+                                                    Answer
+                                                </th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            {answers.map((item) => (
+                                                <tr
+                                                    key={item.question}
+                                                    className="hover:bg-blue-100"
+                                                >
+                                                    <td className="border border-gray-300 px-4 py-2">
+                                                        {item.question}
+                                                    </td>
+
+                                                    <td className={`border border-gray-300 px-4 py-2 font-bold ${
+                                                        item.answer === '?'
+                                                            ? 'text-red-500'
+                                                            : 'text-green-600'
+                                                    }`}>
+                                                        {item.answer}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                <div className={`flex items-center justify-center h-full text-gray-500 ${showResultImage ? 'block object-contain':'hidden object-contain'}`}>
+                                    No answers detected
+                                </div>
+                            )}
+                        </div>
+                        <div className={`justify-center items-center bg-blue-50 rounded-2xl py-5 w-full ${showResultImage ? 'flex':'hidden'}`}>
+                            <img ref={resultImageRef} alt="scanned page result"  
+                            onClick={() => {
+                                if (resultImageRef.current?.src) {
+                                    window.open(resultImageRef.current.src, '_blank')
+                                }
+                            }}
+                            className={`w-full h-full ${showResultImage ? 'block object-contain cursor-pointer':'hidden object-contain'}`} />
                         </div>
                     </div>
                 </div>
