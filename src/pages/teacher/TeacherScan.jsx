@@ -12,14 +12,22 @@ function TeacherScan(){
     const [isUploading, setIsUploading] = useState(false)
     const [isCameraOn, setIsCameraOn] = useState(false)
     const [answers, setAnswers] = useState([])
+    const [examId, setExamId] = useState('')
+    const [studentId, setStudentId] = useState('')
 
     const ocrRef = useRef(null)
-    // eslint-disable-next-line no-unused-vars
-    const [isOcrReady, setIsOcrReady] = useState(false)    
 
     const intervalRef = useRef(null)
     const scannerRef = useRef(null)
     const resultImageRef = useRef(null)
+
+    const stopMediaStream = (stream) => {
+    if (stream) {
+        stream.getTracks().forEach(track => {
+        track.stop()
+        })
+    }
+    }
 
     const stopCamera = () => {
         setIsCameraOn(false)
@@ -29,8 +37,15 @@ function TeacherScan(){
             intervalRef.current = null
         }
 
-        if (videoRef.current) {
+        if (videoRef.current?.srcObject) {
+            stopMediaStream(videoRef.current.srcObject)
             videoRef.current.srcObject = null
+        }
+
+        if (videoRef.current) {
+            videoRef.current.pause()
+            videoRef.current.removeAttribute('src')
+            videoRef.current.load()
         }
 
         if (canvasRef.current) {
@@ -44,38 +59,62 @@ function TeacherScan(){
         }
 
         if (resultImageRef.current) {
-            resultImageRef.current.srcObject = null
+            if (resultImageRef.current.src?.startsWith('blob:')) {
+            URL.revokeObjectURL(resultImageRef.current.src)
+            }
+            resultImageRef.current.src = ''
+            resultImageRef.current.removeAttribute('src')
+            setShowResultImage(false)
         }
     }
 
     const clearResult = () => {
-        setIsCameraOn(false)
-        setIsUploading(false)
-        setAnswers([])
         if (intervalRef.current) {
             clearInterval(intervalRef.current)
             intervalRef.current = null
         }
 
-        if (videoRef.current) {
+        if (videoRef.current?.srcObject) {
+            videoRef.current.srcObject.getTracks().forEach(t => t.stop())
             videoRef.current.srcObject = null
         }
-
-        if (canvasRef.current) {
-            canvasRef.current.width = 0
-            canvasRef.current.height = 0
+        if (videoRef.current) {
+            videoRef.current.pause()
+            videoRef.current.removeAttribute('src')
+            videoRef.current.load()
         }
 
-        if (resultCanvasRef.current) {
-            resultCanvasRef.current.width = 0
-            resultCanvasRef.current.height = 0
-        }
+        ;[canvasRef, resultCanvasRef].forEach(ref => {
+            if (ref.current) {
+            const ctx = ref.current.getContext('2d')
+            if (ctx) ctx.clearRect(0, 0, ref.current.width, ref.current.height)
+            ref.current.width = 0
+            ref.current.height = 0
+            }
+        })
 
         if (resultImageRef.current) {
-            resultImageRef.current.srcObject = null
-            setShowResultImage(false)
+            if (resultImageRef.current.src?.startsWith('blob:')) {
+            URL.revokeObjectURL(resultImageRef.current.src)
+            }
+            resultImageRef.current.src = ''
+            resultImageRef.current.removeAttribute('src')
         }
-    }
+
+        setExamId('')
+        setStudentId('')
+        setAnswers([])
+        setShowResultImage(false)
+        setIsUploading(false)
+        setIsCameraOn(false)
+
+        if (fileInputRef.current) {
+            fileInputRef.current.value = ''
+        }
+
+        //force a GC hint (Chrome only)
+        if (window.gc) window.gc()
+        }
 
     useEffect(() => {
         if (window.jscanify) {
@@ -88,7 +127,6 @@ function TeacherScan(){
         ocr.initialize()
             .then(() => {
                 ocrRef.current = ocr
-                setIsOcrReady(true)
             })
             .catch((err) => console.error('PaddleOCR failed to initialize:', err))
 
@@ -98,6 +136,7 @@ function TeacherScan(){
                 ocrRef.current.destroy()
             }
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const startCamera = async () => {
@@ -233,16 +272,15 @@ function TeacherScan(){
         }
     }
 
-    const extractStudentIdNumber = async (src, cv) => {
+    const extractHeaderData = async (src, cv) => {
         if (!ocrRef.current) {
             console.warn("PaddleOCR service is not initialized yet.")
-            return ""
+            return { examId: "", studentId: "" }
         }
 
         const gray = new cv.Mat()
         const thresh = new cv.Mat()
-        
-        // 1. Convert to Grayscale & Adaptive Threshold to locate ID bounding box
+
         cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY)
         cv.adaptiveThreshold(
             gray,
@@ -258,60 +296,75 @@ function TeacherScan(){
         const hierarchy = new cv.Mat()
         cv.findContours(thresh, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
 
-        let topRect = null
-        const maxYThreshold = src.rows * 0.35 // Look within the top 35% of the paper
+        const boundingBoxes = []
+        const maxYThreshold = src.rows * 0.35 // Restrict to top 35% of paper
 
         for (let i = 0; i < contours.size(); i++) {
             const rect = cv.boundingRect(contours.get(i))
             const aspect = rect.width / rect.height
 
-            if (rect.y < maxYThreshold && rect.width > 80 && rect.height > 20 && aspect > 1.8) {
-                if (!topRect || rect.width > topRect.width) {
-                    topRect = rect
-                }
+            // Filter for input box outlines
+            if (rect.y < maxYThreshold && rect.width > 120 && rect.height > 20 && aspect > 1.8) {
+                boundingBoxes.push(rect)
             }
         }
 
+        // Sort bounding boxes vertically (top to bottom: EXAM ID is first, STUDENT ID is second)
+        boundingBoxes.sort((a, b) => a.y - b.y)
+
+        // Deduplicate overlapping bounding boxes
+        const filteredBoxes = boundingBoxes.filter((box, idx, self) => 
+            idx === 0 || Math.abs(box.y - self[idx - 1].y) > 15
+        )
+
+        const runOcrOnRegion = async (rect) => {
+            const roi = src.roi(rect)
+            const cropCanvas = document.createElement('canvas')
+            const scaleFactor = 2 
+
+            cropCanvas.width = roi.cols * scaleFactor
+            cropCanvas.height = roi.rows * scaleFactor
+
+            const tempCanvas = document.createElement('canvas')
+            cv.imshow(tempCanvas, roi)
+
+            const ctx = cropCanvas.getContext('2d')
+            ctx.imageSmoothingEnabled = true
+            ctx.drawImage(tempCanvas, 0, 0, cropCanvas.width, cropCanvas.height)
+
+            roi.delete()
+
+            try {
+                const ocrResult = await ocrRef.current.recognize(cropCanvas)
+                return ocrResult?.text?.trim() || ""
+            } catch (err) {
+                console.error("PaddleOCR Region Error:", err)
+                return ""
+            }
+        }
+
+        let extractedExamId = ""
+        let extractedStudentId = ""
+
+        if (filteredBoxes.length >= 2) {
+            // Box 0 = EXAM ID, Box 1 = STUDENT ID
+            const rawExam = await runOcrOnRegion(new cv.Rect(filteredBoxes[0].x, filteredBoxes[0].y, filteredBoxes[0].width, filteredBoxes[0].height))
+            const rawStudent = await runOcrOnRegion(new cv.Rect(filteredBoxes[1].x, filteredBoxes[1].y, filteredBoxes[1].width, filteredBoxes[1].height))
+
+            extractedExamId = rawExam
+            extractedStudentId = rawStudent.replace(/\D/g, '') // Keep digits only for Student ID
+        } else if (filteredBoxes.length === 1) {
+            // Fallback if only 1 box is detected: treat as Student ID
+            const rawStudent = await runOcrOnRegion(new cv.Rect(filteredBoxes[0].x, filteredBoxes[0].y, filteredBoxes[0].width, filteredBoxes[0].height))
+            extractedStudentId = rawStudent.replace(/\D/g, '')
+        }
+
+        gray.delete()
         thresh.delete()
         contours.delete()
         hierarchy.delete()
 
-        let croppedMat
-        if (topRect) {
-            const rect = new cv.Rect(topRect.x, topRect.y, topRect.width, topRect.height)
-            croppedMat = src.roi(rect)
-        } else {
-            // Fallback: Default crop top 20% area
-            const fallbackRect = new cv.Rect(0, 0, src.cols, Math.floor(src.rows * 0.20))
-            croppedMat = src.roi(fallbackRect)
-        }
-
-        // 2. Prepare canvas for PaddleOCR
-        const cropCanvas = document.createElement('canvas')
-        const scaleFactor = 2 
-        cropCanvas.width = croppedMat.cols * scaleFactor
-        cropCanvas.height = croppedMat.rows * scaleFactor
-
-        const tempCanvas = document.createElement('canvas')
-        cv.imshow(tempCanvas, croppedMat)
-        
-        const ctx = cropCanvas.getContext('2d')
-        ctx.imageSmoothingEnabled = true
-        ctx.drawImage(tempCanvas, 0, 0, cropCanvas.width, cropCanvas.height)
-
-        gray.delete()
-        croppedMat.delete()
-
-        // 3. Perform local OCR using PaddleOCR
-        try {
-            const ocrResult = await ocrRef.current.recognize(cropCanvas)
-            const rawText = ocrResult?.text || ""
-            
-            return rawText.replace(/\D/g, '') // Strip non-digits
-        } catch (err) {
-            console.error("PaddleOCR Extraction Error:", err)
-            return ""
-        }
+        return { examId: extractedExamId, studentId: extractedStudentId }
     }
 
     const processShadedSheet = async(extractedCanvas) => {
@@ -324,237 +377,257 @@ function TeacherScan(){
             return
         }
 
-        const src = cv.imread(extractedCanvas)
+        let src, display, gray, blurred, thresh, contours, hierarchy
 
-        // Extract Student ID
-        const studentId = await extractStudentIdNumber(src, cv)
-        console.log("Extracted Student ID:", studentId)
+        try {
+            src = cv.imread(extractedCanvas)
 
-        const display = src.clone()
-        const gray = new cv.Mat()
-        const blurred = new cv.Mat()
-        const thresh = new cv.Mat()
+            // Extract Exam ID and Student ID
+            const { examId: parsedExamId, studentId: parsedStudentId } = await extractHeaderData(src, cv)
 
-        cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY)
-        cv.GaussianBlur(gray, blurred, new cv.Size(5, 5), 0)
+            setExamId(parsedExamId)
+            setStudentId(parsedStudentId)
 
-        cv.adaptiveThreshold(
-            blurred,
-            thresh,
-            255,
-            cv.ADAPTIVE_THRESH_GAUSSIAN_C,
-            cv.THRESH_BINARY_INV,
-            15,
-            8
-        )
+            display = src.clone()
+            gray = new cv.Mat()
+            blurred = new cv.Mat()
+            thresh = new cv.Mat()
 
-        const contours = new cv.MatVector()
-        const hierarchy = new cv.Mat()
-        cv.findContours(thresh, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+            cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY)
+            cv.GaussianBlur(gray, blurred, new cv.Size(5, 5), 0)
 
-        const candidates = []
-        for (let i = 0; i < contours.size(); i++) {
-            const c = contours.get(i)
-            const rect = cv.boundingRect(c)
-            const area = cv.contourArea(c)
-            const aspect = rect.width / (rect.height || 1)
+            cv.adaptiveThreshold(
+                blurred,
+                thresh,
+                255,
+                cv.ADAPTIVE_THRESH_GAUSSIAN_C,
+                cv.THRESH_BINARY_INV,
+                15,
+                8
+            )
 
-            if (
-            rect.width >= 10 && rect.height >= 10 &&
-            aspect > 0.55 && aspect < 1.8 &&
-            area > 80
-            ) {
-            candidates.push({
-                contour: c,
-                x: rect.x + rect.width / 2,
-                y: rect.y + rect.height / 2,
-                rect,
-                area,
-                size: (rect.width + rect.height) / 2
-            })
+            contours = new cv.MatVector()
+            hierarchy = new cv.Mat()
+            cv.findContours(thresh, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+
+            const candidates = []
+            for (let i = 0; i < contours.size(); i++) {
+                const c = contours.get(i)
+                const rect = cv.boundingRect(c)
+                const area = cv.contourArea(c)
+                const aspect = rect.width / (rect.height || 1)
+
+                if (
+                    rect.width >= 10 && rect.height >= 10 &&
+                    aspect > 0.55 && aspect < 1.8 &&
+                    area > 80
+                ) {
+                candidates.push({
+                    contour: c,
+                    x: rect.x + rect.width / 2,
+                    y: rect.y + rect.height / 2,
+                    rect,
+                    area,
+                    size: (rect.width + rect.height) / 2
+                })
+                }
             }
-        }
 
-        if (candidates.length < 10) {
-            Swal.fire({
-                text:"Too few candidates found",
-                icon:"warning"
-            }); 
-            return
-        }
+            if (candidates.length < 10) {
+                Swal.fire({
+                    text:"Too few candidates found",
+                    icon:"warning"
+                })
+                return
+            }
 
-        const sizes = candidates.map(c => c.size).sort((a, b) => a - b)
-        const medianSize = sizes[Math.floor(sizes.length / 2)]
+            const sizes = candidates.map(c => c.size).sort((a, b) => a - b)
+            const medianSize = sizes[Math.floor(sizes.length / 2)]
 
-        const areas = candidates.map(c => c.area).sort((a, b) => a - b)
-        const medianArea = areas[Math.floor(areas.length / 2)]
+            const areas = candidates.map(c => c.area).sort((a, b) => a - b)
+            const medianArea = areas[Math.floor(areas.length / 2)]
+            
+            const MIN_SIZE = medianSize * 0.55
+            const MAX_SIZE = medianSize * 1.45
+            const MIN_AREA = medianArea * 0.50
+            const MAX_AREA = medianArea * 1.80
 
-        const MIN_SIZE = medianSize * 0.55
-        const MAX_SIZE = medianSize * 1.55
-        const MIN_AREA = medianArea * 0.40
-        const MAX_AREA = medianArea * 2.20
-
-        const bubbles = candidates.filter(c =>
-            c.size >= MIN_SIZE &&
-            c.size <= MAX_SIZE &&
-            c.area >= MIN_AREA &&
-            c.area <= MAX_AREA &&
-            (c.rect.width / c.rect.height) > 0.70 &&
-            (c.rect.width / c.rect.height) < 1.40
-        )
-
-        const sortedByX = [...bubbles].sort((a, b) => a.x - b.x)
-
-        const xGaps = []
-
-        for (let i = 1; i < sortedByX.length; i++) {
-            xGaps.push({
-                gap: sortedByX[i].x - sortedByX[i - 1].x,
-                index: i
+            const bubbles = candidates.filter(c => {
+                const ar = c.rect.width / c.rect.height
+                return (
+                    c.size >= MIN_SIZE && c.size <= MAX_SIZE &&
+                    c.area >= MIN_AREA && c.area <= MAX_AREA &&
+                    ar > 0.75 && ar < 1.30 &&                 // tighter circle
+                    c.rect.width  >= medianSize * 0.6 &&
+                    c.rect.height >= medianSize * 0.6
+                )
             })
-        }
 
-        const columnGap = medianSize * 5
+            const sortedByX = [...bubbles].sort((a, b) => a.x - b.x)
 
-        const splitPoints = xGaps
-            .filter(g => g.gap > columnGap)
-            .map(g => g.index)
+            const xGaps = []
 
-        const columns = []
+            for (let i = 1; i < sortedByX.length; i++) {
+                xGaps.push({
+                    gap: sortedByX[i].x - sortedByX[i - 1].x,
+                    index: i
+                })
+            }
 
-        let start = 0
+            const columnGap = medianSize * 5
 
-        for (const split of splitPoints) {
-            const column = sortedByX
-                .slice(start, split)
+            const splitPoints = xGaps
+                .filter(g => g.gap > columnGap)
+                .map(g => g.index)
+
+            const columns = []
+
+            let start = 0
+
+            for (const split of splitPoints) {
+                const column = sortedByX
+                    .slice(start, split)
+                    .sort((a, b) => a.y - b.y)
+
+                if (column.length >= 4) {
+                    columns.push(column)
+                }
+
+                start = split
+            }
+
+            const lastColumn = sortedByX
+                .slice(start)
                 .sort((a, b) => a.y - b.y)
 
-            if (column.length >= 4) {
-                columns.push(column)
+            if (lastColumn.length >= 4) {
+                columns.push(lastColumn)
             }
 
-            start = split
-        }
+            columns.sort((a, b) => {
+                const ax = a.reduce((sum, bubble) => sum + bubble.x, 0) / a.length
+                const bx = b.reduce((sum, bubble) => sum + bubble.x, 0) / b.length
 
-        const lastColumn = sortedByX
-            .slice(start)
-            .sort((a, b) => a.y - b.y)
-
-        if (lastColumn.length >= 4) {
-            columns.push(lastColumn)
-        }
-
-        columns.sort((a, b) => {
-            const ax = a.reduce((sum, bubble) => sum + bubble.x, 0) / a.length
-            const bx = b.reduce((sum, bubble) => sum + bubble.x, 0) / b.length
-
-            return ax - bx
-        })
-
-        const processColumn = (columnBubbles, startQ = 1) => {
-            const OPTIONS = 4
-            const labels = ['A', 'B', 'C', 'D']
-            const results = []
-            const green = new cv.Scalar(0, 255, 0, 255)
-            const red   = new cv.Scalar(0, 0, 255, 255)
-            const blue  = new cv.Scalar(255, 120, 0, 255)
-
-            for (let i = 0; i < columnBubbles.length; i += OPTIONS) {
-            const group = columnBubbles.slice(i, i + OPTIONS)
-            if (group.length < OPTIONS) break
-
-            const avgY = group.reduce((s, b) => s + b.y, 0) / group.length
-            if (!group.every(b => Math.abs(b.y - avgY) < medianSize * 1.1)) continue
-
-            group.sort((a, b) => a.x - b.x)
-
-            const fills = []
-
-            group.forEach((bubble) => {
-                const mask = cv.Mat.zeros(gray.rows, gray.cols, cv.CV_8UC1)
-                const cntVec = new cv.MatVector()
-                cntVec.push_back(bubble.contour)
-                cv.drawContours(mask, cntVec, -1, new cv.Scalar(255), -1)
-
-                const mean = cv.mean(gray, mask)[0]
-                fills.push(mean)
-
-                const r = bubble.rect
-                cv.rectangle(display,
-                new cv.Point(r.x, r.y),
-                new cv.Point(r.x + r.width, r.y + r.height),
-                green, 2)
-
-                cv.putText(display, Math.round(mean).toString(),
-                new cv.Point(r.x, r.y - 4),
-                cv.FONT_HERSHEY_SIMPLEX, 0.38, blue, 1)
-
-                mask.delete()
-                cntVec.delete()
+                return ax - bx
             })
 
-            const minDark = Math.min(...fills)
-            const secondDark = [...fills].sort((a, b) => a - b)[1]
-            const avgDark = fills.reduce((a, b) => a + b, 0) / fills.length
-            const selected = fills.indexOf(minDark)
+            const processColumn = (columnBubbles, startQ = 1) => {
+                const OPTIONS = 4
+                const labels = ['A', 'B', 'C', 'D']
+                const results = []
+                const green = new cv.Scalar(0, 255, 0, 255)
+                const red   = new cv.Scalar(0, 0, 255, 255)
+                const blue  = new cv.Scalar(255, 120, 0, 255)
 
-            const isClear = minDark < avgDark * 0.82 && minDark < secondDark - 12
+                for (let i = 0; i < columnBubbles.length; i += OPTIONS) {
+                const group = columnBubbles.slice(i, i + OPTIONS)
+                if (group.length < OPTIONS) break
 
-            const answer = isClear ? labels[selected] : '?'
-            const qNum = startQ + results.length
+                const avgY = group.reduce((s, b) => s + b.y, 0) / group.length
+                if (!group.every(b => Math.abs(b.y - avgY) < medianSize * 1.1)) continue
 
-            results.push({ question: qNum, answer, fills })
+                group.sort((a, b) => a.x - b.x)
 
-            if (isClear) {
-                const r = group[selected].rect
-                cv.rectangle(display,
-                new cv.Point(r.x - 3, r.y - 3),
-                new cv.Point(r.x + r.width + 3, r.y + r.height + 3),
-                red, 3)
+                const fills = []
+
+                group.forEach((bubble) => {
+                    const mask = cv.Mat.zeros(gray.rows, gray.cols, cv.CV_8UC1)
+                    const cntVec = new cv.MatVector()
+                    cntVec.push_back(bubble.contour)
+                    cv.drawContours(mask, cntVec, -1, new cv.Scalar(255), -1)
+
+                    const mean = cv.mean(gray, mask)[0]
+                    fills.push(mean)
+
+                    const r = bubble.rect
+                    cv.rectangle(display,
+                    new cv.Point(r.x, r.y),
+                    new cv.Point(r.x + r.width, r.y + r.height),
+                    green, 2)
+
+                    cv.putText(display, Math.round(mean).toString(),
+                    new cv.Point(r.x, r.y - 4),
+                    cv.FONT_HERSHEY_SIMPLEX, 0.38, blue, 1)
+
+                    mask.delete()
+                    cntVec.delete()
+                })
+
+                const minDark = Math.min(...fills)
+                const secondDark = [...fills].sort((a, b) => a - b)[1]
+                const avgDark = fills.reduce((a, b) => a + b, 0) / fills.length
+                const selected = fills.indexOf(minDark)
+
+                const isClear = minDark < avgDark * 0.82 && minDark < secondDark - 12
+
+                const answer = isClear ? labels[selected] : '?'
+                const qNum = startQ + results.length
+
+                results.push({ question: qNum, answer, fills })
+
+                if (isClear) {
+                    const r = group[selected].rect
+                    cv.rectangle(display,
+                    new cv.Point(r.x - 3, r.y - 3),
+                    new cv.Point(r.x + r.width + 3, r.y + r.height + 3),
+                    red, 3)
+                }
+
+                const first = group[0].rect
+                cv.putText(display, `Q${qNum}:${answer}`,
+                    new cv.Point(Math.max(4, first.x - 80), first.y + first.height / 2 + 5),
+                    cv.FONT_HERSHEY_SIMPLEX, 0.48,
+                    isClear ? green : red, 2)
+                }
+                return results
             }
 
-            const first = group[0].rect
-            cv.putText(display, `Q${qNum}:${answer}`,
-                new cv.Point(Math.max(4, first.x - 80), first.y + first.height / 2 + 5),
-                cv.FONT_HERSHEY_SIMPLEX, 0.48,
-                isClear ? green : red, 2)
+            const allResults = []
+
+            let questionNumber = 1
+
+            for (const column of columns) {
+                const results = processColumn(column, questionNumber)
+
+                allResults.push(...results)
+
+                questionNumber += results.length
+            }   
+
+            const debugCanvas = document.createElement('canvas')
+            cv.imshow(debugCanvas, display)
+
+            debugCanvas.toBlob((blob) => {
+            if (!blob || !resultImageRef.current) return
+
+            // Revoke previous URL if exists
+            if (resultImageRef.current.src?.startsWith('blob:')) {
+                URL.revokeObjectURL(resultImageRef.current.src)
             }
-            return results
-        }
 
-        const allResults = []
-
-        let questionNumber = 1
-
-        for (const column of columns) {
-            const results = processColumn(column, questionNumber)
-
-            allResults.push(...results)
-
-            questionNumber += results.length
-        }   
-
-        const debugCanvas = document.createElement('canvas')
-        cv.imshow(debugCanvas, display)
-
-        const imageSrc = debugCanvas.toDataURL('image/png')
-
-        if (resultImageRef.current) {
-            resultImageRef.current.src = imageSrc
+            const url = URL.createObjectURL(blob)
+            resultImageRef.current.src = url
             setShowResultImage(true)
-        }
+            }, 'image/png', 0.92)
 
-        src.delete()
-        display.delete()
-        gray.delete()
-        blurred.delete()
-        thresh.delete()
-        contours.delete()
-        hierarchy.delete()
+            setAnswers(allResults)
 
-        setAnswers(allResults)
-
-        return allResults
+            // return allResults
+        } catch (err) {
+            console.error('processShadedSheet error:', err)
+            Swal.fire({ 
+                text: 'Processing failed', 
+                icon: 'error' 
+            })
+        }finally{
+            src?.delete()
+            display?.delete()
+            gray?.delete()
+            blurred?.delete()
+            thresh?.delete()
+            contours?.delete()
+            hierarchy?.delete()
+        }        
     }    
   
     return(
@@ -609,6 +682,16 @@ function TeacherScan(){
                             <button onClick={clearResult} className='cursor-pointer font-bold text-2xl leading-none bg-yellow-300 hover:bg-yellow-400 p-1 rounded-md'>Clear</button>
                         </div>
                     </div> 
+                    <div className="flex flex-col gap-2 mb-4 text-gray-800 w-full text-left bg-white p-4 rounded-xl shadow-inner">
+                        <p className="text-lg font-bold">
+                            Exam ID: 
+                            {isUploading? <span className="text-blue-600">Reading...</span> : <span className="text-blue-600">{examId || 'Not Detected'}</span>}                            
+                        </p>
+                        <p className="text-lg font-bold">
+                            Student ID: 
+                            {isUploading? <span className="text-blue-600">Reading...</span> : <span className="text-blue-600">{studentId || 'Not Detected'}</span>}
+                        </p>
+                    </div>
                     <div className='text-white p-2 text-lg md:text-2xl text-center rounded-2xl flex md:flex-row flex-wrap justify-around gap-4 h-fit md:h-full'>                        
                         <div className={`justify-center items-center bg-blue-50 rounded-2xl py-5 w-full ${showResultImage ? 'flex':'hidden'}`}>
                             {answers.length > 0 ? (
