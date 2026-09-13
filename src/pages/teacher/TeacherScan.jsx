@@ -402,8 +402,8 @@ function TeacherScan(){
                 255,
                 cv.ADAPTIVE_THRESH_GAUSSIAN_C,
                 cv.THRESH_BINARY_INV,
-                15,
-                8
+                11,
+                6
             )
 
             contours = new cv.MatVector()
