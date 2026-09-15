@@ -15,6 +15,12 @@ function TeacherScan(){
     const [examId, setExamId] = useState('')
     const [studentId, setStudentId] = useState('')
 
+    const [isEditing, setIsEditing] = useState(false)
+    const [editExamId, setEditExamId] = useState('')
+    const [editStudentId, setEditStudentId] = useState('')
+    const [editAnswers, setEditAnswers] = useState([])
+    const [numQuestions, setNumQuestions] = useState('')
+
     const ocrRef = useRef(null)
 
     const intervalRef = useRef(null)
@@ -611,8 +617,11 @@ function TeacherScan(){
             }, 'image/png', 0.92)
 
             setAnswers(allResults)
-
-            // return allResults
+            setEditExamId(parsedExamId || '')
+            setEditStudentId(parsedStudentId || '')
+            setEditAnswers(allResults.map(a => ({ ...a })))
+            setNumQuestions(allResults.length.toString())
+            setIsEditing(false)
         } catch (err) {
             console.error('processShadedSheet error:', err)
             Swal.fire({ 
@@ -628,7 +637,61 @@ function TeacherScan(){
             contours?.delete()
             hierarchy?.delete()
         }        
-    }    
+    }
+
+    const startEditing = () => {
+        setEditExamId(examId)
+        setEditStudentId(studentId)
+        setEditAnswers(answers.map(a => ({ ...a })))
+        setNumQuestions(answers.length.toString())
+        setIsEditing(true)
+    }
+
+    const cancelEditing = () => {
+        setIsEditing(false)
+    }
+
+    const applyCorrections = () => {
+        setExamId(editExamId.trim())
+        setStudentId(editStudentId.trim())
+        setAnswers(editAnswers)
+        setIsEditing(false)
+
+        Swal.fire({
+            icon: 'success',
+            title: 'Corrections applied',
+            timer: 1500,
+            showConfirmButton: false
+        })
+    }
+
+    const updateAnswer = (questionNumber, newAnswer) => {
+        setEditAnswers(prev =>
+            prev.map(item =>
+            item.question === questionNumber
+                ? { ...item, answer: newAnswer }
+                : item
+            )
+        )
+    }
+
+    // Optional: force the number of questions (pad or trim)
+    const applyNumQuestions = () => {
+        const n = parseInt(numQuestions, 10)
+        if (isNaN(n) || n < 1) return
+
+        setEditAnswers(prev => {
+            const current = [...prev]
+            if (current.length < n) {
+            for (let i = current.length + 1; i <= n; i++) {
+                current.push({ question: i, answer: '?', fills: [] })
+            }
+            } else if (current.length > n) {
+            return current.slice(0, n)
+            }
+            return current
+        })
+    }
   
     return(
         <>
@@ -680,17 +743,86 @@ function TeacherScan(){
                         <h1 className='font-bold text-2xl leading-none'>Scan Results</h1>
                         <div className="flex justify-around gap-1">
                             <button onClick={clearResult} className='cursor-pointer font-bold text-2xl leading-none bg-yellow-300 hover:bg-yellow-400 p-1 rounded-md'>Clear</button>
+                            {!isEditing ? (
+                                <button
+                                    onClick={startEditing}
+                                    disabled={answers.length === 0 && !examId && !studentId}
+                                    className='cursor-pointer font-bold text-lg bg-blue-300 hover:bg-blue-400 px-3 py-1 rounded-md disabled:opacity-50'
+                                >
+                                    Correct / Edit
+                                </button>
+                            ) : (
+                                <>
+                                    <button
+                                    onClick={applyCorrections}
+                                    className='cursor-pointer font-bold text-lg bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md'
+                                    >
+                                    Apply Corrections
+                                    </button>
+                                    <button
+                                    onClick={cancelEditing}
+                                    className='cursor-pointer font-bold text-lg bg-gray-300 hover:bg-gray-400 px-3 py-1 rounded-md'
+                                    >
+                                    Cancel
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div> 
-                    <div className="flex flex-col gap-2 mb-4 text-gray-800 w-full text-left bg-white p-4 rounded-xl shadow-inner">
-                        <p className="text-lg font-bold">
-                            Exam ID: 
-                            {isUploading? <span className="text-blue-600">Reading...</span> : <span className="text-blue-600">{examId || 'Not Detected'}</span>}                            
-                        </p>
-                        <p className="text-lg font-bold">
-                            Student ID: 
-                            {isUploading? <span className="text-blue-600">Reading...</span> : <span className="text-blue-600">{studentId || 'Not Detected'}</span>}
-                        </p>
+                    <div className="flex flex-col gap-3 mb-4 text-gray-800 w-full text-left bg-white p-4 rounded-xl shadow-inner">
+                        <div className="flex flex-wrap items-center gap-3">
+                            <label className="font-bold text-lg min-w-27.5">Exam ID:</label>
+                            {isEditing ? (
+                            <input
+                                type="text"
+                                value={editExamId}
+                                onChange={(e) => setEditExamId(e.target.value)}
+                                className="border border-gray-300 rounded-md px-3 py-1.5 flex-1 max-w-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                placeholder="Enter Exam Code"
+                            />
+                            ) : (
+                            <span className="text-blue-600 font-semibold text-lg">
+                                {isUploading ? 'Reading...' : (examId || 'Not Detected')}
+                            </span>
+                            )}
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-3">
+                            <label className="font-bold text-lg min-w-27.5">Student ID:</label>
+                            {isEditing ? (
+                            <input
+                                type="text"
+                                value={editStudentId}
+                                onChange={(e) => setEditStudentId(e.target.value.replace(/\D/g, ''))}
+                                className="border border-gray-300 rounded-md px-3 py-1.5 flex-1 max-w-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                placeholder="Digits only"
+                            />
+                            ) : (
+                            <span className="text-blue-600 font-semibold text-lg">
+                                {isUploading ? 'Reading...' : (studentId || 'Not Detected')}
+                            </span>
+                            )}
+                        </div>
+
+                        {/* Optional: Number of Questions */}
+                        {isEditing && (
+                            <div className="flex flex-wrap items-center gap-3 mt-1">
+                            <label className="font-bold text-lg min-w-27.5"># Questions:</label>
+                            <input
+                                type="number"
+                                min="1"
+                                value={numQuestions}
+                                onChange={(e) => setNumQuestions(e.target.value)}
+                                className="border border-gray-300 rounded-md px-3 py-1.5 w-24 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            />
+                            <button
+                                onClick={applyNumQuestions}
+                                className="text-sm bg-blue-100 hover:bg-blue-200 px-2 py-1 rounded"
+                            >
+                                Apply
+                            </button>
+                            </div>
+                        )}
                     </div>
                     <div className='text-white p-2 text-lg md:text-2xl text-center rounded-2xl flex md:flex-row flex-wrap justify-around gap-4 h-fit md:h-full'>                        
                         <div className={`justify-center items-center bg-blue-50 rounded-2xl py-5 w-full ${showResultImage ? 'flex':'hidden'}`}>
@@ -709,7 +841,7 @@ function TeacherScan(){
                                         </thead>
 
                                         <tbody>
-                                            {answers.map((item) => (
+                                            {(isEditing ? editAnswers : answers).map((item) => (
                                                 <tr
                                                     key={item.question}
                                                     className="hover:bg-blue-100"
@@ -718,12 +850,26 @@ function TeacherScan(){
                                                         {item.question}
                                                     </td>
 
-                                                    <td className={`border border-gray-300 px-4 py-2 font-bold ${
-                                                        item.answer === '?'
-                                                            ? 'text-red-500'
-                                                            : 'text-green-600'
-                                                    }`}>
-                                                        {item.answer}
+                                                    <td className="border border-gray-300 px-4 py-2 text-center">
+                                                        {isEditing ? (
+                                                            <select
+                                                            value={item.answer}
+                                                            onChange={(e) => updateAnswer(item.question, e.target.value)}
+                                                            className={`font-bold rounded px-2 py-1 border ${
+                                                                item.answer === '?' ? 'text-red-500 border-red-300' : 'text-green-600 border-green-300'
+                                                            }`}
+                                                            >
+                                                            <option value="A">A</option>
+                                                            <option value="B">B</option>
+                                                            <option value="C">C</option>
+                                                            <option value="D">D</option>
+                                                            <option value="?">?</option>
+                                                            </select>
+                                                        ) : (
+                                                            <span className={`font-bold ${item.answer === '?' ? 'text-red-500' : 'text-green-600'}`}>
+                                                            {item.answer}
+                                                            </span>
+                                                        )}
                                                     </td>
                                                 </tr>
                                             ))}

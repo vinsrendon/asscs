@@ -17,6 +17,7 @@ function TeacherAnswerKeys(){
                         <th className="px-6 py-4 font-extrabold text-center">EXAM TITLE</th>
                         <th className="px-6 py-4 font-extrabold text-center">SUBJECT</th>
                         <th className="px-6 py-4 font-extrabold text-center">ITEMS</th>
+                        <th className="px-6 py-4 font-extrabold text-center">STATUS</th>
                         <th className="px-6 py-4 font-extrabold text-center">CREATED DATE</th>
                         <th className="px-6 py-4 font-extrabold text-center">ACTIONS</th>
                     </tr>
@@ -25,6 +26,10 @@ function TeacherAnswerKeys(){
                     <tbody className="divide-y divide-gray-200">
                     <tr className="hover:bg-gray-200 transition-colors">
                         <td className="px-6 py-4 font-medium text-gray-900">
+                        
+                        </td>
+
+                        <td className="px-6 py-4">
                         
                         </td>
 
