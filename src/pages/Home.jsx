@@ -52,6 +52,18 @@ function Home(){
             setPassword('')
         }).catch((err)=>{
             console.log(err)
+            if (!err.response) {
+                const isTimeout = err.code === "ECONNABORTED" || err.message.includes("timeout");
+                
+                Swal.fire({
+                    title: "Cannot contact server",
+                    text: isTimeout 
+                        ? "The server is taking too long to respond." 
+                        : "Unable to reach the server. Please try again later.",
+                    icon: "error"
+                });
+                return;
+            }
                         
             switch (err.status) {
                 case 403:
@@ -75,9 +87,9 @@ function Home(){
                     })
                 return
 
-                default:
+                default:                    
                     Swal.fire({
-                        title:"UNEXPECTED ERROR OCCURED CHECK CONSOLE FOR MORE INFO",
+                        title:"UNEXPECTED ERROR OCCURED",
                         text:err,
                         icon:"error"
                     })

@@ -675,7 +675,6 @@ function TeacherScan(){
         )
     }
 
-    // Optional: force the number of questions (pad or trim)
     const applyNumQuestions = () => {
         const n = parseInt(numQuestions, 10)
         if (isNaN(n) || n < 1) return

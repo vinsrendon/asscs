@@ -165,13 +165,13 @@ function TeacherStudents(){
                 <h2 className='text-2xl font-bold'>Students Directory</h2>
                 <p className='text-muted-foreground'>Manage enrolled students and their access.</p>
                 </div>
-                <div>
+                {/* <div>
                     <button className='px-3 py-2 text-white rounded-2xl bg-blue-500 hover:bg-blue-400 font-semibold'>+ Add Student</button>
-                </div>
+                </div> */}
             </div>
 
             {/* SEARCH & FILTERS */}
-            <div className="mt-5 mx-2 md:mx-6">
+            <div className="mt-5">
                 <input 
                     className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" 
                     placeholder="Search by name, email, or student ID..." 
