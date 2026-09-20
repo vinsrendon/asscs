@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from 'react'
 import Swal from 'sweetalert2'
 import { PaddleOcrService } from 'ppu-paddle-ocr/web'
+import axios from '../../../axios-config'
 
 
 function TeacherScan(){  
@@ -20,6 +21,9 @@ function TeacherScan(){
     const [editStudentId, setEditStudentId] = useState('')
     const [editAnswers, setEditAnswers] = useState([])
     const [numQuestions, setNumQuestions] = useState('')
+
+    const [isChecking, setIsChecking] = useState(false)
+    const [checkResult, setCheckResult] = useState(null)
 
     const ocrRef = useRef(null)
 
@@ -691,6 +695,47 @@ function TeacherScan(){
             return current
         })
     }
+
+    const checkAnswers = async () => {
+        if (!examId || !studentId || answers.length === 0) {
+            Swal.fire({
+            text: 'Exam ID, Student ID and answers are required',
+            icon: 'warning'
+            })
+            return
+        }
+
+        setIsChecking(true)
+        setCheckResult(null)
+
+        try {
+            const res = await axios.post('/exam/check', {
+                examCode: examId.trim(),
+                studentId: studentId.trim(),
+                studentAnswers: answers
+            })
+
+            setCheckResult(res.data.result)
+
+            Swal.fire({
+            title: `Score: ${res.data.result.score}%`,
+            html: `
+                <p><b>${res.data.result.correct}</b> correct out of <b>${res.data.result.total}</b></p>
+                <p>${res.data.result.exam.title}</p>
+                <p class="text-sm text-gray-500 mt-2">Result saved successfully</p>
+            `,
+            icon: res.data.result.score >= 75 ? 'success' : 'info'
+            })
+        } catch (err) {
+            console.error(err)
+            Swal.fire({
+            text: err.response?.data?.message || 'Failed to check answers',
+            icon: 'error'
+            })
+        } finally {
+            setIsChecking(false)
+        }
+    }
   
     return(
         <>
@@ -766,6 +811,13 @@ function TeacherScan(){
                                     </button>
                                 </>
                             )}
+                            <button
+                            onClick={checkAnswers}
+                            disabled={isChecking || answers.length === 0 || !examId}
+                            className="cursor-pointer font-bold text-lg bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded-md disabled:opacity-50"
+                            >
+                            {isChecking ? 'Checking...' : 'Check Score'}
+                            </button>
                         </div>
                     </div> 
                     <div className="flex flex-col gap-3 mb-4 text-gray-800 w-full text-left bg-white p-4 rounded-xl shadow-inner">
@@ -881,6 +933,24 @@ function TeacherScan(){
                                 </div>
                             )}
                         </div>
+                        {checkResult && (
+                            <div className="mt-6 p-4 bg-green-50 rounded-xl">
+                                <h3 className="text-xl font-bold mb-2">
+                                Score: {checkResult.score}% ({checkResult.correct}/{checkResult.total})
+                                </h3>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                                {checkResult.details.map((item) => (
+                                    <div
+                                    key={item.question}
+                                    className={`p-2 rounded ${item.isCorrect ? 'bg-green-200' : 'bg-red-200'}`}
+                                    >
+                                    Q{item.question}: {item.studentAnswer} 
+                                    {!item.isCorrect && ` (Correct: ${item.correctAnswer})`}
+                                    </div>
+                                ))}
+                                </div>
+                            </div>
+                        )}
                         <div className={`justify-center items-center bg-blue-50 rounded-2xl py-5 w-full ${showResultImage ? 'flex':'hidden'}`}>
                             <img ref={resultImageRef} alt="scanned page result"  
                             onClick={() => {

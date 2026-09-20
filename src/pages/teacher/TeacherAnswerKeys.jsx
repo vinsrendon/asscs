@@ -14,110 +14,190 @@ function TeacherAnswerKeys(){
     const [limit, setLimit] = useState(10)
     const [totalPages, setTotalPages] = useState(1)
     const [exams, setExams] = useState([])
+    const [loading, setLoading] = useState(false)
+
+    const [isAnswerModalOpen, setIsAnswerModalOpen] = useState(false)
+    const [selectedExam, setSelectedExam] = useState(null)
+    const [answers, setAnswers] = useState([])
     
     const [isModalOpen, setIsModalOpen] = useState(false)
 
     const closeExamModal = () => {
         setIsModalOpen(false)
+        setSubject('')
+        setTitle('')
+        setExamType('')
+        setNumberOfItems('')
     }
 
     const submitExam = async (e) => {
         e.preventDefault()
-        console.log(subject + ""+title+""+examType);
-        
 
-        if(!subject || !title || !examType){
+        if (!subject || !title || !examType || !numberOfItems) {
             Swal.fire({
-                text:"Missing Failed",
-                icon:"warning"
+            text: 'Please fill in all required fields',
+            icon: 'warning'
             })
             return
         }
 
-        await axios.post(
-            '/exam',
-            {
-                subject:subject,
-                title:title,
-                type:examType,
-                numberOfItems:numberOfItems
-            }
-        ).then((res)=>{        
-            if(res.status === 200){             
-                Swal.fire({
-                text:res.data.message,
-                icon:"success"
-                })
-            }
-            else{
-                Swal.fire({
-                text:res.data.message,
-                icon:"info"
-                })
-            }
-        }).catch((err)=>{
-            console.log(err)
-            switch (err.status) {
-                case 403:
-                    Swal.fire({
-                        text:err.response.data.message,
-                        icon:"warning"
-                    })
-                return
+        try {
+            const res = await axios.post('/exam', {
+            subject,
+            title,
+            type: examType,
+            numberOfItems: numberOfItems
+            })
 
-                case 404:
-                    Swal.fire({
-                        text:err.response.data.message,
-                        icon:"warning"
-                    })
-                return
-
-                case 500:
-                    Swal.fire({
-                        text:err.response.data.message,
-                        icon:"error"
-                    })
-                return
-
-                default:
-                    Swal.fire({
-                        text:"UNEXPECTED ERROR OCCURED CHECK CONSOLE FOR MORE INFO",
-                        icon:"error"
-                    })
-                return
+            if (res.status === 200 || res.status === 201) {
+            Swal.fire({
+                text: res.data.message || 'Exam created successfully',
+                icon: 'success'
+            })
+            closeExamModal()
+            fetchExams()
             }
-        })
-    }
-    const handleSearch = (e) => {
-        if (e.key === 'Enter') {
-            setSearch(e.target.value)
+        } catch (err) {
+            console.error(err)
+            const message = err.response?.data?.message || 'Unexpected error occurred'
+            Swal.fire({
+            text: message,
+            icon: 'error'
+            })
         }
     }
-    const fetchStudents = () => {
-        axios.get('/exams', {
-            params: {
-                page,
-                limit,
-                search
-            }
-        })
-        .then((res) => {
-            setExams(res.data.data)
-            setTotalPages(res.data.pagination.totalPages)
-        })
-        .catch((err) => {
+
+    const handleSearch = (e) => {
+        if (e.key === 'Enter') {
+            setPage(1)
+            setSearch(searchInput.trim())
+        }
+    }
+
+    const fetchExams = async () => {
+        setLoading(true)
+        try {
+            const res = await axios.get('/exams', {
+            params: { page, limit, search }
+            })            
+            setExams(res.data.data || [])
+            setTotalPages(res.data.pagination?.totalPages || 1)
+        } catch (err) {
             console.error(err)
+            setExams([])
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const deleteExam = async (id) => {
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: 'This exam will be permanently deleted!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
         })
+
+        if (!result.isConfirmed) return
+
+        try {
+            const res = await axios.delete(`/exam/${id}`)
+
+            if (res.status === 200 || res.status === 204) {
+            Swal.fire({
+                text: res.data?.message || 'Exam deleted successfully',
+                icon: 'success'
+            })
+            fetchExams()
+            }
+        } catch (err) {
+            console.error(err)
+            const message = err.response?.data?.message || 'Failed to delete exam'
+            Swal.fire({
+            text: message,
+            icon: 'error'
+            })
+        }
+    }
+
+    const openAnswerKeyModal = (exam) => {
+        setSelectedExam(exam)
+
+        let initialAnswers
+
+        // If the exam already has an answer key, use the existing answers
+        if (exam.answers && Array.isArray(exam.answers) && exam.answers.length > 0) {
+            initialAnswers = [...exam.answers]
+        } else {
+            // Otherwise create empty answers based on total_items
+            initialAnswers = Array(exam.total_items).fill('')
+        }
+
+        setAnswers(initialAnswers)
+        setIsAnswerModalOpen(true)
+    }
+
+    const closeAnswerKeyModal = () => {
+        setIsAnswerModalOpen(false)
+        setSelectedExam(null)
+        setAnswers([])
+    }
+
+    const submitAnswerKey = async (e) => {
+        e.preventDefault()
+
+        // Validation
+        if (answers.some(ans => !ans.trim())) {
+            Swal.fire({
+            text: 'Please fill in all answers',
+            icon: 'warning'
+            })
+            return
+        }
+
+        try {
+            const res = await axios.post(`/exam/${selectedExam.id}/answer-key`, {
+            answers: answers
+            })
+
+            if (res.status === 200) {
+            Swal.fire({
+                text: res.data.message || 'Answer key saved successfully',
+                icon: 'success'
+            })
+            closeAnswerKeyModal()
+            fetchExams() // refresh list so status updates
+            }
+        } catch (err) {
+            console.error(err)
+            const message = err.response?.data?.message || 'Failed to save answer key'
+            Swal.fire({
+            text: message,
+            icon: 'error'
+            })
+        }
     }
 
     useEffect(() => {
-        fetchStudents()
+        fetchExams()
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page, limit, search])
 
+    const formatDate = (dateString) => {
+        if (!dateString) return '-'
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        })
+    }
+
     return(
         <>
-            {/* EDIT STUDENT MODAL */}
+            {/* CREATE EXAM MODAL */}
             <Modal isOpen={isModalOpen} onClose={closeExamModal}>
                 <h2 className="text-4xl font-bold text-center pb-4">Create Exam</h2>                
                 <form onSubmit={submitExam} className="flex gap-2 flex-col">
@@ -151,6 +231,55 @@ function TeacherAnswerKeys(){
                     </button>
                 </form>
             </Modal>
+
+            {/* CREATE EXAM ANSWER KEY MODAL */}
+            <Modal isOpen={isAnswerModalOpen} onClose={closeAnswerKeyModal}>
+                <h2 className="text-3xl font-bold text-center pb-2">
+                    Upload Answer Key
+                </h2>
+                <p className="text-center text-gray-500 mb-6">
+                    {selectedExam?.title} ({selectedExam?.total_items} items)
+                </p>
+
+                <form onSubmit={submitAnswerKey} className="flex flex-col gap-4 max-h-[60vh] overflow-y-auto pr-2">
+                    {answers.map((answer, index) => (
+                    <div key={index} className="flex items-center gap-3">
+                        <label className="w-16 font-medium text-gray-700">
+                        Q {index + 1}
+                        </label>
+                        <input
+                        required
+                        type="text"
+                        className="flex-1 px-4 py-2 rounded-lg bg-slate-50 border border-slate-200 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm"
+                        placeholder="Enter correct answer"
+                        value={answer}
+                        onChange={(e) => {
+                            const newAnswers = [...answers]
+                            newAnswers[index] = e.target.value
+                            setAnswers(newAnswers)
+                        }}
+                        />
+                    </div>
+                    ))}
+
+                    <div className="flex gap-3 mt-4 sticky bottom-0 bg-white pt-3">
+                    <button
+                        type="button"
+                        onClick={closeAnswerKeyModal}
+                        className="flex-1 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="submit"
+                        className="flex-1 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium"
+                    >
+                        Save Answer Key
+                    </button>
+                    </div>
+                </form>
+            </Modal>
+            
             <div className='flex justify-between mx-2 md:mx-6 max-md:mt-10'>
                 <div>
                 <h2 className='text-2xl font-bold'>Answer Keys</h2>
@@ -186,42 +315,120 @@ function TeacherAnswerKeys(){
                     </thead>
 
                     <tbody className="divide-y divide-gray-200">
-                    <tr className="hover:bg-gray-200 transition-colors">
-                        <td className="px-6 py-4 font-medium text-gray-900">
-                        
-                        </td>
-
-                        <td className="px-6 py-4">
-                        
-                        </td>
-
-                        <td className="px-6 py-4">
-                        
-                        </td>
-
-                        <td className="px-6 py-4">
-                        
-                        </td>
-
-                        <td className="px-6 py-4">
-                        
-                        </td>
-
-                        <td className="px-6 py-4">
-                        
-                        </td>
-
-                        <td className="px-6 py-4">
-                            <div className="flex justify-center items-center">
-                                <svg className='fill-muted-foreground'  xmlns="http://www.w3.org/2000/svg" width="24" height="24"  
-                                fill="none" viewBox="0 0 24 24" >                            
-                                <path d="M17 6V4c0-1.1-.9-2-2-2H9c-1.1 0-2 .9-2 2v2H2v2h2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8h2V6zM9 4h6v2H9zM6 20V8h12v12z"></path><path d="M9 10h2v8H9zm4 0h2v8h-2z"></path>
-                                </svg>
-                            </div>
-                        </td>
-                    </tr>
-                    </tbody>
+                        {loading ? (
+                            <tr>
+                            <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
+                                Loading...
+                            </td>
+                            </tr>
+                        ) : exams.length === 0 ? (
+                            <tr>
+                            <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
+                                No exams found
+                            </td>
+                            </tr>
+                        ) : (
+                            exams.map((exam) => (
+                            <tr key={exam.id} className="hover:bg-gray-50 transition-colors">
+                                <td className="px-6 py-4 font-medium text-gray-900 text-center">
+                                {exam.title}
+                                </td>
+                                <td className="px-6 py-4 text-center">
+                                {exam.code}
+                                </td>
+                                <td className="px-6 py-4 text-center">
+                                {exam.subject}
+                                </td>
+                                <td className="px-6 py-4 text-center">
+                                {exam.total_items}
+                                </td>
+                                <td className="px-6 py-4 text-center">
+                                <span
+                                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                    exam.status === 'has answer key'
+                                        ? 'bg-green-100 text-green-800'
+                                        : 'bg-yellow-100 text-yellow-800'
+                                    }`}
+                                >
+                                    {exam.status === 'has answer key' ? 'Has Answer Key' : 'No Answer Key'}
+                                </span>
+                                </td>
+                                <td className="px-6 py-4 text-center">
+                                {formatDate(exam.created_at)}
+                                </td>
+                                <td className="px-6 py-4">
+                                <div className="flex justify-center items-center gap-3">
+                                    <button
+                                    title="Upload Answer Key"
+                                    className="text-gray-500 hover:text-blue-600 transition"
+                                    onClick={() => openAnswerKeyModal(exam)}
+                                    >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="m12 8-5 6h4v7h2v-7h4z"></path>
+                                        <path d="M19 3H5c-1.1 0-2 .9-2 2v7h2V5h14v7h2V5c0-1.1-.9-2-2-2"></path>
+                                    </svg>
+                                    </button>
+                                    <button
+                                    title="Delete"
+                                    className="text-gray-500 hover:text-red-600 transition"
+                                    onClick={() => deleteExam(exam.id)}
+                                    >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="20"
+                                        height="20"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                        d="M17 6V4c0-1.1-.9-2-2-2H9c-1.1 0-2 .9-2 2v2H2v2h2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8h2V6zM9 4h6v2H9zM6 20V8h12v12z"
+                                        fill="currentColor"
+                                        />
+                                        <path d="M9 10h2v8H9zm4 0h2v8h-2z" fill="currentColor" />
+                                    </svg>
+                                    </button>
+                                </div>
+                                </td>
+                            </tr>
+                            ))
+                        )}
+                    </tbody>                    
                 </table>
+            </div>
+            {/* BOTTOM PAGINATION CONTROLS */}
+            <div className="flex justify-center items-center text-sm gap-4 my-4 flex-wrap">
+                <button
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    Previous
+                </button>
+                <span className="font-medium">Page {page} of {totalPages}</span>
+                <button
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    disabled={page >= totalPages}
+                    className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    Next
+                </button>
+                <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600">Show</span>
+                    <select
+                        value={limit}
+                        onChange={(e) => {
+                            setLimit(Number(e.target.value))
+                            setPage(1)
+                        }}
+                        className="px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                    </select>
+                    <span className="text-sm text-gray-600">entries</span>
+                </div>
             </div>
         </>
     )

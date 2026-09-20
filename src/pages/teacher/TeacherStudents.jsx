@@ -14,11 +14,17 @@ function TeacherStudents(){
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [selectedUser, setSelectedUser] = useState(null)
     const [originalUser, setOriginalUser] = useState(null)
+    const [selected, setSelected] = useState('students')
+
+    const options = [
+        { value: 'students', label: 'Students' },
+        { value: 'applicants', label: 'Applicants' }
+    ]
 
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setPage(1)
-    }, [search, limit])
+    }, [search,selected, limit])
 
     const fetchStudents = () => {
         axios.get('/users', {
@@ -26,7 +32,7 @@ function TeacherStudents(){
                 page,
                 limit,
                 search,
-                filter: 'students' // Hardcoded to fetch only students
+                filter: selected
             }
         })
         .then((res) => {
@@ -41,7 +47,7 @@ function TeacherStudents(){
     useEffect(() => {
         fetchStudents()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [page, limit, search])
+    }, [page, limit, search, selected])
 
     const editUser = (user) => {
         setSelectedUser(user)
@@ -168,10 +174,9 @@ function TeacherStudents(){
                 {/* <div>
                     <button className='px-3 py-2 text-white rounded-2xl bg-blue-500 hover:bg-blue-400 font-semibold'>+ Add Student</button>
                 </div> */}
-            </div>
+            </div>            
 
-            {/* SEARCH & FILTERS */}
-            <div className="mt-5">
+            <div className='mt-5 flex flex-wrap max-md:flex-col justify-between gap-1'>
                 <input 
                     className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" 
                     placeholder="Search by name, email, or student ID..." 
@@ -180,6 +185,19 @@ function TeacherStudents(){
                     onChange={(e) => setSearchInput(e.target.value)} 
                     onKeyDown={handleSearch}
                 />
+                <div className="flex gap-2 flex-wrap">
+                    {options.map((opt) => (
+                        <label key={opt.value} className="cursor-pointer">
+                        <input type="radio" name="option" value={opt.value} checked={selected === opt.value} onChange={() => setSelected(opt.value)} className="sr-only"/>
+                        <span className={`inline-block px-4 py-2.5 rounded-xl border-2 font-medium transition-all 
+                            ${selected === opt.value? 
+                            'bg-primary text-white border-primary shadow-lg shadow-primary/25' : 
+                            'bg-slate-50 text-slate-700 border-slate-200 hover:border-primary/50'}`}>
+                            {opt.label} 
+                        </span>
+                        </label>
+                    ))}
+                </div>
             </div>
 
             <div className="mt-5 w-full overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
@@ -216,7 +234,7 @@ function TeacherStudents(){
 
                                 {/* ID NUMBER */}
                                 <td className="px-6 py-4">
-                                    {student.student_id || "-"}
+                                    {student.student_id || student.applicant_id || "-"}
                                 </td>
 
                                 {/* ACTIONS */}
