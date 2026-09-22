@@ -1,6 +1,7 @@
 import { Navigate } from "react-router"
 import { useEffect, useState } from "react"
 import axios from "../../axios-config"
+import Swal from 'sweetalert2'
 
 function RoleGuard({ children, allowedRoles }) {
   const [status, setStatus] = useState("loading")
@@ -17,6 +18,10 @@ function RoleGuard({ children, allowedRoles }) {
         setStatus("authenticated")
       } catch (error) {
         console.log(error)
+        Swal.fire({
+          text:"Session Expired",
+          icon:"warning"
+        })
         setStatus("unauthenticated")
       }
     }

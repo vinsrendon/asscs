@@ -8,9 +8,22 @@ function AdminAccounts(){
     const [searchInput, setSearchInput] = useState('')
     const [selected, setSelected] = useState('all')
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false)
     const [page, setPage] = useState(1)
     const [limit, setLimit] = useState(10)
     const [totalPages, setTotalPages] = useState(1)
+    const [users, setUsers] = useState([])
+
+    const [firstname, setFirstname] = useState('')
+    const [middlename, setMiddlename] = useState('')
+    const [lastname, setLastname] = useState('')
+    const [course, setCourse] = useState('')
+    const [role, setRole] = useState('')
+    const [phone, setPhone] = useState('')
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [confirmPassword, setConfirmPassword] = useState('')
+    const [loading, setLoading] = useState(false)
 
     const options = [
         { value: 'all', label: 'All' },
@@ -19,9 +32,7 @@ function AdminAccounts(){
         { value: 'applicants', label: 'Applicants' },
         { value: 'pendings', label: 'Pendings' },
         { value: 'inactive', label: 'Inactives' }
-    ]
-
-    const [users, setUsers] = useState([])
+    ]    
 
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -58,6 +69,11 @@ function AdminAccounts(){
     const closeEditModal = () => {
         setSelectedUser(null)
         setIsModalOpen(false)        
+    }
+
+    const closeAddModal = () => {
+        setIsAddModalOpen(false)   
+        clearForm()     
     }
 
     const submitEdit = async (e) => {
@@ -114,6 +130,105 @@ function AdminAccounts(){
         if (e.key === 'Enter') {
             setSearch(e.target.value)
         }
+    }
+
+    const clearForm = () =>{
+        setFirstname('')
+        setMiddlename('')
+        setLastname('')
+        setCourse('')
+        setPhone('')
+        setEmail('')
+        setPassword('')
+        setConfirmPassword('')
+        setRole('')
+    }
+
+    const registerUser = async (e) =>{
+        e.preventDefault()
+
+        setLoading(true)
+
+        if(password != confirmPassword){
+            Swal.fire({
+                text:"Password Doesn't match",
+                icon:"warning"
+            })
+            return
+        }
+
+        if(course === "NULL")
+            setCourse('')
+
+        await axios.post(
+            '/register',
+            {
+                firstname: firstname,
+                middlename: middlename,
+                lastname: lastname,
+                course: course,
+                role: role,
+                phone: phone,
+                email: email,
+                password: password,
+                status : 'ACTIVE'
+            }
+        ).then((res)=>{        
+            if(res.status === 200){             
+                Swal.fire({
+                text:res.data.message,
+                icon:"success"
+                })
+            }
+            else{
+                Swal.fire({
+                text:res.data.message,
+                icon:"info"
+                })
+            }
+            clearForm()
+        }).catch((err)=>{
+            console.log(err)
+            clearForm()
+            switch (err.status) {
+                case 403:
+                    Swal.fire({
+                        text:err.response.data.message,
+                        icon:"warning"
+                    })
+                return
+
+                case 404:
+                    Swal.fire({
+                        text:err.response.data.message,
+                        icon:"warning"
+                    })
+                return
+
+                case 409:
+                    Swal.fire({
+                        text:err.response.data.message,
+                        icon:"warning"
+                    })
+                return
+
+                case 500:
+                    Swal.fire({
+                        text:err.response.data.message,
+                        icon:"error"
+                    })
+                return
+
+                default:
+                    Swal.fire({
+                        text:"UNEXPECTED ERROR OCCURED CHECK CONSOLE FOR MORE INFO",
+                        icon:"error"
+                    })
+                return
+            }
+        }).finally(()=>{
+            setLoading(false)
+        })
     }
 
     return(
@@ -198,13 +313,77 @@ function AdminAccounts(){
                 )}
             </Modal>
 
+            <Modal isOpen={isAddModalOpen} onClose={() => closeAddModal()}>
+                <h2 className="text-4xl font-bold text-center pb-4">Add User</h2>
+                <form className="space-y-1" onSubmit={registerUser}>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className='space-y-1.5'>
+                            <label className="text-sm font-semibold text-foreground">First Name</label>
+                            <input required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="Juan" type="text" value={firstname} onChange={(e) => setFirstname(e.target.value)}></input>
+                        </div>
+                        <div className='space-y-1.5'>
+                            <label className="text-sm font-semibold text-foreground">
+                                Middle Name 
+                                <span className='text-muted-foreground font-normal'> (Optional)</span>
+                            </label>
+                            <input className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="Santos" type="text" value={middlename} onChange={(e) => setMiddlename(e.target.value)}></input>
+                        </div>                                
+                    </div>
+                    <div className='space-y-1.5'>
+                        <label className="text-sm font-semibold text-foreground">Last Name</label>
+                        <input required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="Dela Cruz" type="text" value={lastname} onChange={(e) => setLastname(e.target.value)}></input>                                
+                    </div>
+                    <div className='space-y-1.5'>
+                        <label className="text-sm font-semibold text-foreground">Course</label>
+                        <select required name="course" id="course" className='w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm' value={course} onChange={(e) => setCourse(e.target.value)}>
+                            <option value="">--Select User Course--</option>
+                            <option value="BSED">BSED</option>
+                            <option value="BSEE">BSEE</option>
+                            <option value="BSHM">BSHM</option>
+                            <option value="BSIT">BSIT</option>
+                            <option value="NULL">N/A</option>
+                        </select>
+                    </div>
+                    <div className='space-y-1.5'>
+                        <label className="text-sm font-semibold text-foreground">Phone Number</label>
+                        <input required minLength='11' maxLength='11' className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="09123456789" type="numeric" pattern="[0-9]*"  value={phone} onChange={(e) => setPhone(e.target.value)}></input>
+                    </div>
+                    <div className='space-y-1.5'>
+                        <label className="text-sm font-semibold text-foreground">Email Address</label>
+                        <input required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="you@school.edu" type="email" value={email} onChange={(e) => setEmail(e.target.value)}></input>
+                    </div>
+                    <div className='space-y-1.5'>
+                        <label className="text-sm font-semibold text-foreground">Password</label>
+                        <input required minLength="6" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="Min. 6 characters" type="password" value={password} onChange={(e) => setPassword(e.target.value)}></input>
+                    </div>
+                    <div className='space-y-1.5'>
+                        <label className="text-sm font-semibold text-foreground">Confirm Password</label>
+                        <input required minLength="6" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="Min. 6 characters" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}></input>
+                    </div>
+                    <div className='space-y-1.5'>
+                        <label className="text-sm font-semibold text-foreground">User Role</label>
+                        <select required name="course" id="course" className='w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm' value={role} onChange={(e) => setRole(e.target.value)}>
+                            <option value="">--Select The Role--</option>
+                            <option value="APPLICANT">APPLICANT</option>
+                            <option value="STUDENT">STUDENT</option>
+                            <option value="TEACHER">TEACHER</option>
+                            <option value="ADMIN">ADMIN</option>
+                        </select>
+                    </div>
+                    <button disabled={loading} className="w-full group flex items-center justify-center gap-2 px-6 py-3.5 mt-2 rounded-xl font-semibold bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-200" type="submit">
+                    {loading ? 'Registering...' : 'Submit Registration'} 
+                    {/* <img src={arrow} alt="right arrow" /> */}
+                    </button>
+                </form>
+            </Modal>
+
             <div className='flex max-md:flex-col-reverse justify-between max-md:mt-10'>
                 <div>
                     <h2 className='text-2xl font-bold'>Account Management</h2>
                     <p className='text-muted-foreground'>Manage Teacher and student accounts</p>
                 </div>
                 <div className='max-md:self-end'>
-                    <button className='px-3 py-2 text-white rounded-2xl bg-blue-500 hover:bg-blue-400 font-semibold'>+ Add Account</button>
+                    <button onClick={() => setIsAddModalOpen(true)} className='px-3 py-2 text-white rounded-2xl bg-blue-500 hover:bg-blue-400 font-semibold'>+ Add Account</button>
                 </div>
             </div>
             <div className='mt-5 flex flex-wrap max-md:flex-col justify-between gap-1'>

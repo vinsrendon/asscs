@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import axios from '../../../axios-config.js'
 import MarkdownPreview from '@uiw/react-markdown-preview';
+import Swal from 'sweetalert2'
 
 function StudentChat(){
     const [messages, setMessages] = useState([])
@@ -112,7 +113,11 @@ function StudentChat(){
                             })
                         }
                     } catch (err) {
-                        console.log("JSON parse error:"+err)                        
+                        console.log("JSON parse error:"+err)          
+                        Swal.fire({
+                            text: err,
+                            icon:"error"
+                        })              
                     }
                 }
                 }
@@ -121,6 +126,10 @@ function StudentChat(){
         )
         } catch (err) {
         console.error('Axios Chat Error:', err)
+        Swal.fire({
+            text: err,
+            icon:"error"
+        }) 
         setMessages((prev) => {
             const updated = [...prev]
             const lastIdx = updated.length - 1
