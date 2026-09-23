@@ -383,7 +383,7 @@ function AdminAccounts(){
                     <p className='text-muted-foreground'>Manage Teacher and student accounts</p>
                 </div>
                 <div className='max-md:self-end'>
-                    <button onClick={() => setIsAddModalOpen(true)} className='px-3 py-2 text-white rounded-2xl bg-blue-500 hover:bg-blue-400 font-semibold'>+ Add Account</button>
+                    <button onClick={() => setIsAddModalOpen(true)} className='cursor-pointer px-3 py-2 text-white rounded-2xl bg-blue-500 hover:bg-blue-400 font-semibold'>+ Add Account</button>
                 </div>
             </div>
             <div className='mt-5 flex flex-wrap max-md:flex-col justify-between gap-1'>

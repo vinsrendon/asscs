@@ -1,10 +1,14 @@
-import { useState} from 'react'
+import { useState, useEffect} from 'react'
 import { NavLink} from 'react-router'
 import medal from '../../assets/medal-alt.svg'
 import book from '../../assets/book-open.svg'
 import bullseye from '../../assets/bullseye.svg'
+import axios from "../../../axios-config"
+import Swal from 'sweetalert2'
 
 function StudentDashboard(){    
+    const [overallAverage, setOverallAverage] = useState('')
+    const [examTaken, setExamTaken] = useState('')
 
     const [name] = useState(() => {
         return (localStorage.getItem('name') || '').toUpperCase();
@@ -13,6 +17,21 @@ function StudentDashboard(){
     const [role] = useState(() => {
         return (localStorage.getItem('role') || '').toUpperCase();
     })
+
+    useEffect(() => {
+        axios.get(`/student/stats`, {})
+        .then((res) => {           
+            setOverallAverage(res.data.stats.average_score)
+            setExamTaken(res.data.stats.exam_count)
+        })
+        .catch((err) => {
+            console.error(err)
+            Swal.fire({
+                text: err,
+                icon:"error"
+            })
+        })
+    }, [])
     
     return(
         <>
@@ -35,7 +54,7 @@ function StudentDashboard(){
                 </div>   
                 <div>
                     <p className='text-xs'>Overall Average</p>
-                    <h1 className='font-bold text-2xl leading-none'>0 %</h1>
+                    <h1 className='font-bold text-2xl leading-none'>{overallAverage} %</h1>
                 </div>     
             </div>
             <div className="flex flex-1 min-w-48 items-center gap-3 p-5 rounded-2xl shadow-sm shadow-gray-300">
@@ -44,7 +63,7 @@ function StudentDashboard(){
                 </div>   
                 <div>
                     <p className='text-xs'>Exams Taken</p>
-                    <h1 className='font-bold text-2xl leading-none'>0</h1>
+                    <h1 className='font-bold text-2xl leading-none'>{examTaken}</h1>
                 </div>     
             </div>
             {role === "STUDENT" && 

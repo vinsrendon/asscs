@@ -31,7 +31,7 @@ function StudentChat(){
     useEffect(() => {
         const fetchConversations = async () => {
             try {
-            const res = await axios.get(`/api/chat/conversationsbyid`)
+                const res = await axios.get(`/api/chat/conversationsbyid`)
                 setConversations(res.data)                
             } catch (err) {
                 console.error('Failed to fetch conversations:', err)
@@ -78,7 +78,7 @@ function StudentChat(){
                 prompt: userText,
             },
             {
-            timeout: 20000,
+            timeout: 30000,
             responseType: 'text',
             onDownloadProgress: (progressEvent) => {
                 const fullResponse = progressEvent.event.target.responseText
