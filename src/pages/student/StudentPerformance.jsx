@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import axios from "../../../axios-config"
 import Swal from 'sweetalert2'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer} from 'recharts'
 
 function StudentPerformance() {
     const [subjectStrengths, setSubjectStrengths] = useState([])
@@ -35,16 +36,6 @@ function StudentPerformance() {
                 })
             })
     }, [])
-
-    const formatDate = (date) => {
-        if (!date) return ''
-
-        return new Date(date).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric'
-        })
-    }
 
     return (
         <>
@@ -144,59 +135,64 @@ function StudentPerformance() {
 
                     ) : (
 
-                        <div className='mt-6 space-y-4'>
+                        <div className='mt-6 h-64'>
 
-                            {gradeTrends.map((item, index) => {
+                            <ResponsiveContainer width="100%" height="100%">
 
-                                const score = Number(item.score) || 0
+                                <LineChart
+                                    data={[...gradeTrends].reverse()}
+                                    margin={{
+                                        top: 10,
+                                        right: 20,
+                                        left: 0,
+                                        bottom: 10
+                                    }}
+                                >
 
-                                return (
-                                    <div
-                                        key={`${item.exam_id}-${index}`}
-                                        className='flex items-center gap-3'
-                                    >
+                                    <CartesianGrid
+                                        strokeDasharray="3 3"
+                                        vertical={false}
+                                    />
 
-                                        <div className='w-12 text-right'>
-                                            <p className='font-bold'>
-                                                {score}%
-                                            </p>
-                                        </div>
+                                    <XAxis
+                                        dataKey="exam_title"
+                                        tick={{ fontSize: 12 }}
+                                        tickLine={false}
+                                        axisLine={false}
+                                    />
 
-                                        <div className='flex-1'>
+                                    <YAxis
+                                        domain={[0, 100]}
+                                        tick={{ fontSize: 12 }}
+                                        tickLine={false}
+                                        axisLine={false}
+                                        tickFormatter={(value) => `${value}%`}
+                                    />
 
-                                            <div className='flex justify-between mb-1'>
+                                    <Tooltip
+                                        formatter={(value) => [`${value}%`, 'Score']}
+                                        labelFormatter={(label) => `Exam: ${label}`}
+                                    />
 
-                                                <p className='text-sm font-medium truncate'>
-                                                    {item.exam_title}
-                                                </p>
+                                    <Line
+                                        type="monotone"
+                                        dataKey="score"
+                                        strokeWidth={3}
+                                        dot={{
+                                            r: 5
+                                        }}
+                                        activeDot={{
+                                            r: 7
+                                        }}
+                                    />
 
-                                                <p className='text-xs text-muted-foreground ml-2'>
-                                                    {formatDate(item.exam_date)}
-                                                </p>
+                                </LineChart>
 
-                                            </div>
-
-                                            <div className='w-full h-2.5 bg-gray-200 rounded-full overflow-hidden'>
-
-                                                <div
-                                                    className='h-full bg-green-500 rounded-full'
-                                                    style={{
-                                                        width: `${Math.min(score, 100)}%`
-                                                    }}
-                                                />
-
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-                                )
-                            })}
+                            </ResponsiveContainer>
 
                         </div>
                     )}
                 </div>
-
             </div>
         </>
     )

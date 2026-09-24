@@ -117,6 +117,7 @@ function TeacherScan(){
         setShowResultImage(false)
         setIsUploading(false)
         setIsCameraOn(false)
+        setCheckResult(null)
 
         if (fileInputRef.current) {
             fileInputRef.current.value = ''
@@ -934,7 +935,7 @@ function TeacherScan(){
                             )}
                         </div>
                         {checkResult && (
-                            <div className="mt-6 p-4 bg-green-50 rounded-xl">
+                            <div className="mt-6 p-4 bg-blue-300 rounded-xl">
                                 <h3 className="text-xl font-bold mb-2">
                                 Score: {checkResult.score}% ({checkResult.correct}/{checkResult.total})
                                 </h3>
@@ -942,7 +943,7 @@ function TeacherScan(){
                                 {checkResult.details.map((item) => (
                                     <div
                                     key={item.question}
-                                    className={`p-2 rounded ${item.isCorrect ? 'bg-green-200' : 'bg-red-200'}`}
+                                    className={`p-2 rounded ${item.isCorrect ? 'bg-green-400' : 'bg-red-400'}`}
                                     >
                                     Q{item.question}: {item.studentAnswer} 
                                     {!item.isCorrect && ` (Correct: ${item.correctAnswer})`}

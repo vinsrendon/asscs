@@ -212,15 +212,6 @@ function TeacherResult(){
                     <h2 className='text-2xl font-bold'>Exam Results</h2>
                     <p className='text-muted-foreground'>Review all scanned sheet results and scores.</p>
                 </div>
-                {/* <div className="self-end">
-                    <button className='flex items-center px-3 py-2 rounded-2xl font-semibold shadow-sm shadow-gray-300 text-muted-foreground hover:bg-gray-100'>
-                        <svg className="fill-muted-foreground" xmlns="http://www.w3.org/2000/svg" width="24" height="24"  
-                        fill="none" viewBox="0 0 24 24" >
-                        <path d="m10.04 11.29-3.2 3.21 3.2 3.21 1.42-1.42-1.8-1.79 1.8-1.79zm2.5 1.42 1.8 1.79-1.8 1.79 1.42 1.42 3.2-3.21-3.2-3.21z"></path><path d="m19.94 7.68-.03-.09a.8.8 0 0 0-.2-.29l-5-5c-.09-.09-.19-.15-.29-.2l-.09-.03a.8.8 0 0 0-.26-.05c-.02 0-.04-.01-.06-.01H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-12s-.01-.04-.01-.06c0-.09-.02-.17-.05-.26ZM6 20V4h7v4c0 .55.45 1 1 1h4v11z"></path>
-                        </svg>
-                        Export CSV
-                    </button>
-                </div> */}
             </div>
 
             <div className='mt-5 flex flex-wrap max-md:flex-col justify-between gap-1'>
@@ -245,9 +236,42 @@ function TeacherResult(){
                         </label>
                     ))}
                 </div>
-            </div>                    
+            </div>          
+
+            {/* BOTTOM PAGINATION CONTROLS */}
+            <div className="flex justify-center items-center text-sm gap-4 my-2 flex-wrap">
+                <button
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    Previous
+                </button>
+                <span className="font-medium">Page {page} of {totalPages}</span>
+                <button
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    disabled={page >= totalPages}
+                    className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    Next
+                </button>
+                <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600">Show</span>
+                    <select
+                        value={limit}
+                        onChange={(e) => setLimit(Number(e.target.value))}
+                        className="px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                    </select>
+                    <span className="text-sm text-gray-600">entries</span>
+                </div>
+            </div>          
             
-            <div className="mt-5 w-full overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+            <div className="mt-2 w-full overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
                 <table className="w-full text-left text-sm text-gray-600">
                     <thead className="bg-gray-50 text-xs uppercase text-gray-700">
                         <tr>
@@ -343,40 +367,7 @@ function TeacherResult(){
                         )}
                     </tbody>
                 </table>
-            </div>
-
-            {/* BOTTOM PAGINATION CONTROLS */}
-            <div className="flex justify-center items-center text-sm gap-4 my-4 flex-wrap">
-                <button
-                    onClick={() => setPage(p => Math.max(1, p - 1))}
-                    disabled={page === 1}
-                    className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    Previous
-                </button>
-                <span className="font-medium">Page {page} of {totalPages}</span>
-                <button
-                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                    disabled={page >= totalPages}
-                    className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    Next
-                </button>
-                <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">Show</span>
-                    <select
-                        value={limit}
-                        onChange={(e) => setLimit(Number(e.target.value))}
-                        className="px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                        <option value={5}>5</option>
-                        <option value={10}>10</option>
-                        <option value={20}>20</option>
-                        <option value={50}>50</option>
-                    </select>
-                    <span className="text-sm text-gray-600">entries</span>
-                </div>
-            </div>
+            </div>            
         </>
     )
 }
