@@ -46,7 +46,8 @@ function TeacherAnswerKeys(){
             subject,
             title,
             type: examType,
-            numberOfItems: numberOfItems
+            numberOfItems: numberOfItems,
+            status:"INACTIVE",
             })
 
             if (res.status === 200 || res.status === 201) {
@@ -78,8 +79,10 @@ function TeacherAnswerKeys(){
         setLoading(true)
         try {
             const res = await axios.get('/exams', {
-            params: { page, limit, search }
+                params: { page, limit, search }
             })            
+            // console.log(res.data);
+            
             setExams(res.data.data || [])
             setTotalPages(res.data.pagination?.totalPages || 1)
         } catch (err) {
@@ -336,6 +339,7 @@ function TeacherAnswerKeys(){
                     <span className="text-sm text-gray-600">entries</span>
                 </div>
             </div>
+
             <div className="mt-2 w-full overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
                 <table className="w-full text-left text-sm text-gray-600">
                     <thead className="bg-gray-50 text-xs uppercase text-gray-700">
@@ -344,6 +348,7 @@ function TeacherAnswerKeys(){
                         <th className="px-6 py-4 font-extrabold text-center">EXAM CODE</th>
                         <th className="px-6 py-4 font-extrabold text-center">SUBJECT</th>
                         <th className="px-6 py-4 font-extrabold text-center">ITEMS</th>
+                        <th className="px-6 py-4 font-extrabold text-center">KEY</th>
                         <th className="px-6 py-4 font-extrabold text-center">STATUS</th>
                         <th className="px-6 py-4 font-extrabold text-center">CREATED DATE</th>
                         <th className="px-6 py-4 font-extrabold text-center">ACTIONS</th>
@@ -381,13 +386,16 @@ function TeacherAnswerKeys(){
                                 <td className="px-6 py-4 text-center">
                                 <span
                                     className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                    exam.status === 'has answer key'
+                                    exam.key === 'has answer key'
                                         ? 'bg-green-100 text-green-800'
                                         : 'bg-yellow-100 text-yellow-800'
                                     }`}
                                 >
-                                    {exam.status === 'has answer key' ? 'Has Answer Key' : 'No Answer Key'}
+                                    {exam.key === 'has answer key' ? 'Has Answer Key' : 'No Answer Key'}
                                 </span>
+                                </td>
+                                <td className="px-6 py-4 text-center">
+                                {exam.status}
                                 </td>
                                 <td className="px-6 py-4 text-center">
                                 {formatDate(exam.created_at)}
