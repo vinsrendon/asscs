@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react'
 import Swal from 'sweetalert2'
 import { PaddleOcrService } from 'ppu-paddle-ocr/web'
-import axios from '../../../axios-config'
+// import axios from '../../../axios-config'
 
 
 function TeacherScan(){  
@@ -22,7 +22,7 @@ function TeacherScan(){
     const [editAnswers, setEditAnswers] = useState([])
     const [numQuestions, setNumQuestions] = useState('')
 
-    const [isChecking, setIsChecking] = useState(false)
+    // const [isChecking, setIsChecking] = useState(false)
     const [checkResult, setCheckResult] = useState(null)
 
     const ocrRef = useRef(null)
@@ -644,31 +644,31 @@ function TeacherScan(){
         }        
     }
 
-    const startEditing = () => {
-        setEditExamId(examId)
-        setEditStudentId(studentId)
-        setEditAnswers(answers.map(a => ({ ...a })))
-        setNumQuestions(answers.length.toString())
-        setIsEditing(true)
-    }
+    // const startEditing = () => {
+    //     setEditExamId(examId)
+    //     setEditStudentId(studentId)
+    //     setEditAnswers(answers.map(a => ({ ...a })))
+    //     setNumQuestions(answers.length.toString())
+    //     setIsEditing(true)
+    // }
 
-    const cancelEditing = () => {
-        setIsEditing(false)
-    }
+    // const cancelEditing = () => {
+    //     setIsEditing(false)
+    // }
 
-    const applyCorrections = () => {
-        setExamId(editExamId.trim())
-        setStudentId(editStudentId.trim())
-        setAnswers(editAnswers)
-        setIsEditing(false)
+    // const applyCorrections = () => {
+    //     setExamId(editExamId.trim())
+    //     setStudentId(editStudentId.trim())
+    //     setAnswers(editAnswers)
+    //     setIsEditing(false)
 
-        Swal.fire({
-            icon: 'success',
-            title: 'Corrections applied',
-            timer: 1500,
-            showConfirmButton: false
-        })
-    }
+    //     Swal.fire({
+    //         icon: 'success',
+    //         title: 'Corrections applied',
+    //         timer: 1500,
+    //         showConfirmButton: false
+    //     })
+    // }
 
     const updateAnswer = (questionNumber, newAnswer) => {
         setEditAnswers(prev =>
@@ -697,46 +697,46 @@ function TeacherScan(){
         })
     }
 
-    const checkAnswers = async () => {
-        if (!examId || !studentId || answers.length === 0) {
-            Swal.fire({
-            text: 'Exam ID, Student ID and answers are required',
-            icon: 'warning'
-            })
-            return
-        }
+    // const checkAnswers = async () => {
+    //     if (!examId || !studentId || answers.length === 0) {
+    //         Swal.fire({
+    //         text: 'Exam ID, Student ID and answers are required',
+    //         icon: 'warning'
+    //         })
+    //         return
+    //     }
 
-        setIsChecking(true)
-        setCheckResult(null)
+    //     setIsChecking(true)
+    //     setCheckResult(null)
 
-        try {
-            const res = await axios.post('/exam/check', {
-                examCode: examId.trim(),
-                studentId: studentId.trim(),
-                studentAnswers: answers
-            })
+    //     try {
+    //         const res = await axios.post('/exam/check', {
+    //             examCode: examId.trim(),
+    //             studentId: studentId.trim(),
+    //             studentAnswers: answers
+    //         })
 
-            setCheckResult(res.data.result)
+    //         setCheckResult(res.data.result)
 
-            Swal.fire({
-            title: `Score: ${res.data.result.score}%`,
-            html: `
-                <p><b>${res.data.result.correct}</b> correct out of <b>${res.data.result.total}</b></p>
-                <p>${res.data.result.exam.title}</p>
-                <p class="text-sm text-gray-500 mt-2">Result saved successfully</p>
-            `,
-            icon: res.data.result.score >= 75 ? 'success' : 'info'
-            })
-        } catch (err) {
-            console.error(err)
-            Swal.fire({
-            text: err.response?.data?.message || 'Failed to check answers',
-            icon: 'error'
-            })
-        } finally {
-            setIsChecking(false)
-        }
-    }
+    //         Swal.fire({
+    //         title: `Score: ${res.data.result.score}%`,
+    //         html: `
+    //             <p><b>${res.data.result.correct}</b> correct out of <b>${res.data.result.total}</b></p>
+    //             <p>${res.data.result.exam.title}</p>
+    //             <p class="text-sm text-gray-500 mt-2">Result saved successfully</p>
+    //         `,
+    //         icon: res.data.result.score >= 75 ? 'success' : 'info'
+    //         })
+    //     } catch (err) {
+    //         console.error(err)
+    //         Swal.fire({
+    //         text: err.response?.data?.message || 'Failed to check answers',
+    //         icon: 'error'
+    //         })
+    //     } finally {
+    //         setIsChecking(false)
+    //     }
+    // }
   
     return(
         <>
@@ -754,12 +754,12 @@ function TeacherScan(){
                         <h1 className='font-bold text-2xl leading-none'>Camera</h1>                        
                     </div> 
                     <div className="flex justify-center gap-2 flex-wrap">
-                        <button onClick={startCamera} className='cursor-pointer font-bold text-2xl leading-none bg-yellow-300 hover:bg-yellow-400 p-1 rounded-md'>Start</button>
-                        <button onClick={stopCamera} className='cursor-pointer font-bold text-2xl leading-none bg-red-300 hover:bg-red-400 p-1 rounded-md'>Stop</button>
-                        <button onClick={capturePaper} className='cursor-pointer font-bold text-2xl leading-none bg-green-300 hover:bg-green-400 p-1 rounded-md'>Capture</button>
+                        <button onClick={startCamera} className='cursor-pointer font-bold text-2xl leading-none bg-yellow-300 hover:bg-yellow-400 p-2 rounded-xl hover:rounded-sm duration-200 transition-all'>Start</button>
+                        <button onClick={stopCamera} className='cursor-pointer font-bold text-2xl leading-none bg-red-300 hover:bg-red-400 p-2 rounded-xl hover:rounded-sm duration-200 transition-all'>Stop</button>
+                        <button onClick={capturePaper} className='cursor-pointer font-bold text-2xl leading-none bg-green-300 hover:bg-green-400 p-2 rounded-xl hover:rounded-sm duration-200 transition-all'>Capture</button>
                         <button 
                             onClick={() => fileInputRef.current?.click()} 
-                            className='cursor-pointer font-bold text-2xl leading-none bg-blue-300 hover:bg-blue-400 p-1 rounded-md'
+                            className='cursor-pointer font-bold text-2xl leading-none bg-blue-300 hover:bg-blue-400 p-1 rounded-xl hover:rounded-sm duration-200 transition-all'
                         >
                             {isUploading ? 'Uploading...' : 'Upload'}
                         </button>
@@ -787,8 +787,8 @@ function TeacherScan(){
                     <div>
                         <h1 className='font-bold text-2xl leading-none'>Scan Results</h1>
                         <div className="flex justify-around gap-1">
-                            <button onClick={clearResult} className='cursor-pointer font-bold text-2xl leading-none bg-yellow-300 hover:bg-yellow-400 p-1 rounded-md'>Clear</button>
-                            {!isEditing ? (
+                            <button onClick={clearResult} className='cursor-pointer font-bold text-2xl leading-none bg-yellow-300 hover:bg-yellow-400 p-2 rounded-xl hover:rounded-sm duration-200 transition-all'>Clear</button>
+                            {/* {!isEditing ? (
                                 <button
                                     onClick={startEditing}
                                     disabled={answers.length === 0 && !examId && !studentId}
@@ -818,7 +818,7 @@ function TeacherScan(){
                             className="cursor-pointer font-bold text-lg bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded-md disabled:opacity-50"
                             >
                             {isChecking ? 'Checking...' : 'Check Score'}
-                            </button>
+                            </button> */}
                         </div>
                     </div> 
                     <div className="flex flex-col gap-3 mb-4 text-gray-800 w-full text-left bg-white p-4 rounded-xl shadow-inner">

@@ -289,13 +289,13 @@ function TeacherAnswerKeys(){
                 <p className='text-muted-foreground'>Manage exam master sheets and configurations.</p>
                 </div>
                 <div>
-                    <button onClick={() => setIsModalOpen(true)}  className='cursor-pointer px-3 py-2 text-white rounded-2xl bg-blue-500 hover:bg-blue-400 font-semibold'> + Create Exam</button>
+                    <button onClick={() => setIsModalOpen(true)}  className='cursor-pointer px-3 py-2 text-white rounded-2xl bg-blue-500 hover:bg-blue-400 font-semibold hover:rounded-md transition-all duration-200 ease-linear'> + Create Exam</button>
                 </div>
             </div>
             {/* SEARCH & FILTERS */}
             <div className="mt-5">
                 <input 
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" 
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 text-sm focus:rounded-md transition-all duration-200 ease-linear" 
                     placeholder="Search by name, email, or student ID..." 
                     type="text" 
                     value={searchInput} 
@@ -370,7 +370,7 @@ function TeacherAnswerKeys(){
                             </tr>
                         ) : (
                             exams.map((exam) => (
-                            <tr key={exam.id} className="hover:bg-gray-50 transition-colors">
+                            <tr key={exam.id} className="hover:bg-gray-50 cursor-default">
                                 <td className="px-6 py-4 font-medium text-gray-900 text-center">
                                 {exam.title}
                                 </td>
@@ -404,7 +404,7 @@ function TeacherAnswerKeys(){
                                 <div className="flex justify-center items-center gap-3">
                                     <button
                                     title="Upload Answer Key"
-                                    className="text-gray-500 hover:text-blue-600 transition"
+                                    className="text-gray-500 hover:text-blue-600 hover:-translate-y-1 duration-200 transition-all ease-linear"
                                     onClick={() => openAnswerKeyModal(exam)}
                                     >
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
@@ -414,7 +414,7 @@ function TeacherAnswerKeys(){
                                     </button>
                                     <button
                                     title="Delete"
-                                    className="text-gray-500 hover:text-red-600 transition"
+                                    className="text-gray-500 hover:text-red-600 hover:scale-120 duration-200 transition-all ease-linear"
                                     onClick={() => deleteExam(exam.id)}
                                     >
                                     <svg

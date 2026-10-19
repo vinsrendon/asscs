@@ -37,29 +37,29 @@ function TeacherRegisration(){
                             <div className="grid grid-cols-2 gap-3">
                                 <div className='space-y-1.5'>
                                     <label className="text-sm font-semibold text-foreground">First Name</label>
-                                    <input required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="Juan" type="text"></input>
+                                    <input required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm focus:rounded-md duration-200" placeholder="Juan" type="text"></input>
                                 </div>
                                 <div className='space-y-1.5'>
                                     <label className="text-sm font-semibold text-foreground">
                                         Middle Name 
                                         <span className='text-muted-foreground font-normal'> (Optional)</span>
                                     </label>
-                                    <input className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="Santos" type="text"></input>
+                                    <input className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm focus:rounded-md duration-200" placeholder="Santos" type="text"></input>
                                 </div>                                
                             </div>
                             <div className='space-y-1.5'>
                                 <label className="text-sm font-semibold text-foreground">Last Name</label>
-                                <input required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="Dela Cruz" type="text"></input>
+                                <input required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm focus:rounded-md duration-200" placeholder="Dela Cruz" type="text"></input>
                             </div>
                             <div className='space-y-1.5'>
                                 <label className="text-sm font-semibold text-foreground">Email Address</label>
-                                <input required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="you@school.edu" type="email"></input>
+                                <input required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm focus:rounded-md duration-200" placeholder="you@school.edu" type="email"></input>
                             </div>
                             <div className='space-y-1.5'>
                                 <label className="text-sm font-semibold text-foreground">Password</label>
-                                <input required minlength="6" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="Min. 6 characters" type="password"></input>
+                                <input required minlength="6" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm focus:rounded-md duration-200" placeholder="Min. 6 characters" type="password"></input>
                             </div>
-                            <button className="w-full group flex items-center justify-center gap-2 px-6 py-3.5 mt-2 rounded-xl font-semibold bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-200" type="submit">
+                            <button className="w-full group flex items-center justify-center gap-2 px-6 py-3.5 mt-2 rounded-2xl font-semibold bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:rounded-md active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer" type="submit">
                             Submit Registration <img src={arrow} alt="right arrow" />
                             </button>
                         </form>

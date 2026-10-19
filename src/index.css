@@ -37,6 +37,36 @@
   --color-sidebar-accent-foreground: hsl(210 40% 98%);
 }
 
+@keyframes tableBodyFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-table-body {
+    animation: tableBodyFadeIn 300ms ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translate(0px);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 500ms ease-out both;
+}
+
 .wmde-markdown {
   background-color: none !important;
   --color-canvas-default: none;

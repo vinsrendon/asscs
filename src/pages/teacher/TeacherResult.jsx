@@ -216,7 +216,7 @@ function TeacherResult(){
 
             <div className='mt-5 flex flex-wrap max-md:flex-col justify-between gap-1'>
                 <input 
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" 
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 text-sm focus:rounded-md transition-all duration-200 ease-linear" 
                     placeholder="Search by name, email, or student ID..." 
                     type="text" 
                     value={searchInput} 
@@ -230,7 +230,7 @@ function TeacherResult(){
                         <span className={`inline-block px-4 py-2.5 rounded-xl border-2 font-medium transition-all 
                             ${selected === opt.value? 
                             'bg-primary text-white border-primary shadow-lg shadow-primary/25' : 
-                            'bg-slate-50 text-slate-700 border-slate-200 hover:border-primary/50'}`}>
+                            'bg-slate-50 text-slate-700 border-slate-200 hover:border-primary/50hover:rounded-md transition-all duration-200 ease-linear'}`}>
                             {opt.label} 
                         </span>
                         </label>
@@ -297,7 +297,7 @@ function TeacherResult(){
                         </tr>
                     </thead>
 
-                    <tbody className="divide-y divide-gray-200 text-center">
+                    <tbody key={selected} className="divide-y divide-gray-200 text-center animate-table-body">
                         {students.length > 0 ? (
                             students.map((student) => (
                                 <tr
@@ -341,7 +341,7 @@ function TeacherResult(){
                                             {/* View Results */}
                                             <svg
                                                 onClick={() => viewResults(student)}
-                                                className="cursor-pointer fill-muted-foreground hover:fill-blue-500 transition-colors"
+                                                className="cursor-pointer fill-muted-foreground hover:fill-blue-500 hover:scale-110 transition-all duration-200 ease-linear"
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 width="24"
                                                 height="24"
