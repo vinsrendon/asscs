@@ -82,11 +82,11 @@ function TeacherNav(){
                 </div>     
             </div>
             <div className='flex flex-col gap-3'>
-                <NavLink to="/teacher" className={({ isActive }) => isActive ? "flex flex-nowrap bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2" : "flex flex-nowrap hover:bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2"} end><img className='invert' src={dashboard}/>Dashboard</NavLink>
-                <NavLink to="/teacher/scan" className={({ isActive }) => isActive ? "flex flex-nowrap bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2" : "flex flex-nowrap hover:bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2"} end><img src={scan}/>Scan Sheet</NavLink>
-                <NavLink to="/teacher/keys" className={({ isActive }) => isActive ? "flex flex-nowrap bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2" : "flex flex-nowrap hover:bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2"} end><img className='invert' src={key}/>Answer Keys</NavLink>
-                <NavLink to="/teacher/students" className={({ isActive }) => isActive ? "flex flex-nowrap bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2" : "flex flex-nowrap hover:bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2"} end><img className='invert' src={students}/>Students</NavLink>
-                <NavLink to="/teacher/results" className={({ isActive }) => isActive ? "flex flex-nowrap bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2" : "flex flex-nowrap hover:bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2"} end><img className='invert' src={paper}/>Result</NavLink>
+                <NavLink to="/teacher" className={({ isActive }) => isActive ? "flex flex-nowrap bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2" : "flex flex-nowrap hover:bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2 hover:scale-105 transition-all duration-200 ease-linear"} end><img className='invert' src={dashboard}/>Dashboard</NavLink>
+                <NavLink to="/teacher/scan" className={({ isActive }) => isActive ? "flex flex-nowrap bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2" : "flex flex-nowrap hover:bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2 hover:scale-105 transition-all duration-200 ease-linear"} end><img src={scan}/>Scan Sheet</NavLink>
+                <NavLink to="/teacher/keys" className={({ isActive }) => isActive ? "flex flex-nowrap bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2" : "flex flex-nowrap hover:bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2 hover:scale-105 transition-all duration-200 ease-linear"} end><img className='invert' src={key}/>Answer Keys</NavLink>
+                <NavLink to="/teacher/students" className={({ isActive }) => isActive ? "flex flex-nowrap bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2" : "flex flex-nowrap hover:bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2 hover:scale-105 transition-all duration-200 ease-linear"} end><img className='invert' src={students}/>Students</NavLink>
+                <NavLink to="/teacher/results" className={({ isActive }) => isActive ? "flex flex-nowrap bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2" : "flex flex-nowrap hover:bg-blue-600 py-2 px-6 rounded-xl w-full text-md gap-2 hover:scale-105 transition-all duration-200 ease-linear"} end><img className='invert' src={paper}/>Result</NavLink>
             </div>
             
             <div className="mt-auto space-y-2">
@@ -102,7 +102,7 @@ function TeacherNav(){
                         </div>     
                     </div>
                 </div>
-                <NavLink to="#" onClick={logout} className="text-left py-2 px-13 rounded-2xl w-full text-2xl font-bold bg-[#12264F]">Sign out</NavLink>
+                <NavLink to="#" onClick={logout} className="text-left py-2 px-13 rounded-2xl w-full text-2xl font-bold bg-[#12264F] hover:rounded-md transition-all duration-200 ease-linear">Sign out</NavLink>
             </div>
         </aside>
         
