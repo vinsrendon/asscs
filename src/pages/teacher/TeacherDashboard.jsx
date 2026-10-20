@@ -106,8 +106,8 @@ function TeacherDashboard(){
                                 <ul className="flex flex-row justify-between items-center">
                                     <li className="list-disc ml-6">Chatbot Status</li>
                                     <li>
-                                        <span>
-                                            {loading ? 'Checking...' : isOnline ? 'Online' : 'Offline'}
+                                        <span className={ isOnline ? "text-green-500" : "text-red-500"}>
+                                            {loading ? 'Checking...' : isOnline ? 'Online' : 'Offline / Busy'}
                                         </span>
                                     </li>
                                 </ul>
