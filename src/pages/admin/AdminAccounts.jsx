@@ -453,7 +453,7 @@ function AdminAccounts(){
                     </tr>
                     </thead>
 
-                    <tbody className="divide-y divide-gray-200 text-center  transition-all duration-1000 ease-linear">
+                    <tbody key={selected} className="divide-y divide-gray-200 text-center  transition-all duration-1000 ease-linear animate-table-body">
                     {
                         users.map((user) => (
                             <tr key={user.uid} className={

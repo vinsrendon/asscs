@@ -754,12 +754,12 @@ function TeacherScan(){
                         <h1 className='font-bold text-2xl leading-none'>Camera</h1>                        
                     </div> 
                     <div className="flex justify-center gap-2 flex-wrap">
-                        <button onClick={startCamera} className='cursor-pointer font-bold text-2xl leading-none bg-yellow-300 hover:bg-yellow-400 p-2 rounded-xl hover:rounded-sm duration-200 transition-all'>Start</button>
-                        <button onClick={stopCamera} className='cursor-pointer font-bold text-2xl leading-none bg-red-300 hover:bg-red-400 p-2 rounded-xl hover:rounded-sm duration-200 transition-all'>Stop</button>
-                        <button onClick={capturePaper} className='cursor-pointer font-bold text-2xl leading-none bg-green-300 hover:bg-green-400 p-2 rounded-xl hover:rounded-sm duration-200 transition-all'>Capture</button>
+                        <button onClick={startCamera} className='cursor-pointer font-bold text-2xl leading-none bg-yellow-300 hover:bg-yellow-400 p-2 rounded-xl hover:rounded-sm duration-200 transition-all animate-fade-in [animation-delay:0ms]!'>Start</button>
+                        <button onClick={stopCamera} className='cursor-pointer font-bold text-2xl leading-none bg-red-300 hover:bg-red-400 p-2 rounded-xl hover:rounded-sm duration-200 transition-all animate-fade-in [animation-delay:100ms]!'>Stop</button>
+                        <button onClick={capturePaper} className='cursor-pointer font-bold text-2xl leading-none bg-green-300 hover:bg-green-400 p-2 rounded-xl hover:rounded-sm duration-200 transition-all animate-fade-in [animation-delay:200ms]!'>Capture</button>
                         <button 
                             onClick={() => fileInputRef.current?.click()} 
-                            className='cursor-pointer font-bold text-2xl leading-none bg-blue-300 hover:bg-blue-400 p-1 rounded-xl hover:rounded-sm duration-200 transition-all'
+                            className='cursor-pointer font-bold text-2xl leading-none bg-blue-300 hover:bg-blue-400 p-1 rounded-xl hover:rounded-sm duration-200 transition-all animate-fade-in [animation-delay:300ms]!'
                         >
                             {isUploading ? 'Uploading...' : 'Upload'}
                         </button>
@@ -787,7 +787,7 @@ function TeacherScan(){
                     <div>
                         <h1 className='font-bold text-2xl leading-none'>Scan Results</h1>
                         <div className="flex justify-around gap-1">
-                            <button onClick={clearResult} className='cursor-pointer font-bold text-2xl leading-none bg-yellow-300 hover:bg-yellow-400 p-2 rounded-xl hover:rounded-sm duration-200 transition-all'>Clear</button>
+                            <button onClick={clearResult} className='cursor-pointer font-bold text-2xl leading-none bg-yellow-300 hover:bg-yellow-400 p-2 rounded-xl hover:rounded-sm duration-200 transition-all animate-fade-in'>Clear</button>
                             {/* {!isEditing ? (
                                 <button
                                     onClick={startEditing}

@@ -138,23 +138,23 @@ function StudentRegistration(){
                             <div className="grid grid-cols-2 gap-3">
                                 <div className='space-y-1.5'>
                                     <label className="text-sm font-semibold text-foreground">First Name</label>
-                                    <input required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="Juan" type="text" value={firstname} onChange={(e) => setFirstname(e.target.value)}></input>
+                                    <input required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm focus:rounded-md duration-200" placeholder="Juan" type="text" value={firstname} onChange={(e) => setFirstname(e.target.value)}></input>
                                 </div>
                                 <div className='space-y-1.5'>
                                     <label className="text-sm font-semibold text-foreground">
                                         Middle Name 
                                         <span className='text-muted-foreground font-normal'> (Optional)</span>
                                     </label>
-                                    <input className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="Santos" type="text" value={middlename} onChange={(e) => setMiddlename(e.target.value)}></input>
+                                    <input className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm focus:rounded-md duration-200" placeholder="Santos" type="text" value={middlename} onChange={(e) => setMiddlename(e.target.value)}></input>
                                 </div>                                
                             </div>
                             <div className='space-y-1.5'>
                                 <label className="text-sm font-semibold text-foreground">Last Name</label>
-                                <input required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="Dela Cruz" type="text" value={lastname} onChange={(e) => setLastname(e.target.value)}></input>                                
+                                <input required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm focus:rounded-md duration-200" placeholder="Dela Cruz" type="text" value={lastname} onChange={(e) => setLastname(e.target.value)}></input>                                
                             </div>
                             <div className='space-y-1.5'>
                                 <label className="text-sm font-semibold text-foreground">Course</label>
-                                <select required name="course" id="course" className='w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm' value={course} onChange={(e) => setCourse(e.target.value)}>
+                                <select required name="course" id="course" className='w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm focus:rounded-md duration-200' value={course} onChange={(e) => setCourse(e.target.value)}>
                                     <option value="">--Select Your Course--</option>
                                     <option value="BSED">BSED</option>
                                     <option value="BSEE">BSEE</option>
@@ -164,21 +164,21 @@ function StudentRegistration(){
                             </div>
                             <div className='space-y-1.5'>
                                 <label className="text-sm font-semibold text-foreground">Phone Number</label>
-                                <input required minLength='11' maxLength='11' className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="09123456789" type="numeric" pattern="[0-9]*"  value={phone} onChange={(e) => setPhone(e.target.value)}></input>
+                                <input required minLength='11' maxLength='11' className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm focus:rounded-md duration-200" placeholder="09123456789" type="numeric" pattern="[0-9]*"  value={phone} onChange={(e) => setPhone(e.target.value)}></input>
                             </div>
                             <div className='space-y-1.5'>
                                 <label className="text-sm font-semibold text-foreground">Email Address</label>
-                                <input required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="you@school.edu" type="email" value={email} onChange={(e) => setEmail(e.target.value)}></input>
+                                <input required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm focus:rounded-md duration-200" placeholder="you@school.edu" type="email" value={email} onChange={(e) => setEmail(e.target.value)}></input>
                             </div>
                             <div className='space-y-1.5'>
                                 <label className="text-sm font-semibold text-foreground">Password</label>
-                                <input required minLength="6" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="Min. 6 characters" type="password" value={password} onChange={(e) => setPassword(e.target.value)}></input>
+                                <input required minLength="6" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm focus:rounded-md duration-200" placeholder="Min. 6 characters" type="password" value={password} onChange={(e) => setPassword(e.target.value)}></input>
                             </div>
                             <div className='space-y-1.5'>
                                 <label className="text-sm font-semibold text-foreground">Confirm Password</label>
-                                <input required minLength="6" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" placeholder="Min. 6 characters" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}></input>
+                                <input required minLength="6" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm focus:rounded-md duration-200" placeholder="Min. 6 characters" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}></input>
                             </div>
-                            <button disabled={loading} className="w-full group flex items-center justify-center gap-2 px-6 py-3.5 mt-2 rounded-xl font-semibold bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-200" type="submit">
+                            <button disabled={loading} className="w-full group flex items-center justify-center gap-2 px-6 py-3.5 mt-2 rounded-xl font-semibold bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:rounded-md active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer" type="submit">
                             {loading ? 'Registering...' : 'Submit Registration'} <img src={arrow} alt="right arrow" />
                             </button>
                         </form>

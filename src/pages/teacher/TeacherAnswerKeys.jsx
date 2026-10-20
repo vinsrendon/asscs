@@ -206,21 +206,21 @@ function TeacherAnswerKeys(){
                 <form onSubmit={submitExam} className="flex gap-2 flex-col">
                     <div className="flex justify-between flex-wrap text-2xl">
                         <label className="font-bold">Subject</label>
-                        <input required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" type="text"  value={subject} onChange={(e) => setSubject(e.target.value)}/>
+                        <input required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm focus:rounded-md duration-200" type="text"  value={subject} onChange={(e) => setSubject(e.target.value)}/>
                     </div>
                     <div className="flex justify-between flex-wrap text-2xl">
                         <label className="font-bold">Title</label>
-                        <input required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" type="text" value={title} onChange={(e) => setTitle(e.target.value)} />
+                        <input required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm focus:rounded-md duration-200" type="text" value={title} onChange={(e) => setTitle(e.target.value)} />
                     </div>
                     <div className="flex justify-between flex-wrap text-2xl">
                         <label className="font-bold">Number of Items</label>
-                        <input required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" type="number" pattern='' value={numberOfItems} onChange={(e) => setNumberOfItems(e.target.value)} />
+                        <input required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm focus:rounded-md duration-200" type="number" pattern='' value={numberOfItems} onChange={(e) => setNumberOfItems(e.target.value)} />
                     </div>
                     <div className="flex justify-between flex-wrap text-2xl">
                         <label className="font-bold">Exam Type</label>
                         <select 
                             required name="examType" id="examType"
-                            className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm" 
+                            className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm focus:rounded-md duration-200" 
                             value={examType} 
                             onChange={(e) => setExamType(e.target.value)}
                         >
@@ -229,7 +229,7 @@ function TeacherAnswerKeys(){
                             <option value="ENTRANCE">ENTRANCE</option>
                         </select>
                     </div>
-                    <button type="submit" className="cursor-pointer rounded bg-gray-800 hover:bg-gray-700 px-4 py-2 text-white mt-4">
+                    <button type="submit" className="cursor-pointer rounded-2xl bg-gray-800 hover:bg-gray-700 px-4 py-2 text-white mt-4 hover:rounded-md duration-200 transition-all">
                         Create
                     </button>
                 </form>
@@ -253,7 +253,7 @@ function TeacherAnswerKeys(){
                         <input
                         required
                         type="text"
-                        className="flex-1 px-4 py-2 rounded-lg bg-slate-50 border border-slate-200 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm"
+                        className="flex-1 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm focus:rounded-md transition-all duration-200"
                         placeholder="Enter correct answer"
                         value={answer}
                         onChange={(e) => {
@@ -269,13 +269,13 @@ function TeacherAnswerKeys(){
                     <button
                         type="button"
                         onClick={closeAnswerKeyModal}
-                        className="flex-1 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50"
+                        className="flex-1 px-4 py-2 rounded-2xl border border-gray-300 hover:bg-gray-200 cursor-pointer hover:rounded-md duration-200 transition-all"
                     >
                         Cancel
                     </button>
                     <button
                         type="submit"
-                        className="flex-1 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium"
+                        className="flex-1 px-4 py-2 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-medium cursor-pointer hover:rounded-md duration-200 transition-all"
                     >
                         Save Answer Key
                     </button>
@@ -355,7 +355,7 @@ function TeacherAnswerKeys(){
                     </tr>
                     </thead>
 
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody key={exams} className="divide-y divide-gray-200 animate-table-body">
                         {loading ? (
                             <tr>
                             <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
