@@ -4,6 +4,12 @@
     font-family: sans-serif;
 }
 
+@layer base {
+  button {
+    @apply  ;
+  }
+}
+
 @theme {
   --color-background: hsl(210 40% 98%);
   --color-foreground: hsl(222 47% 11%);

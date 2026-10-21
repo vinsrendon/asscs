@@ -71,6 +71,7 @@ function Home(){
                         text:err.response.data.message,
                         icon:"warning"
                     })
+                    setPassword('')
                 return
 
                 case 404:
@@ -127,7 +128,7 @@ function Home(){
                                 <label htmlFor="email" className="text-sm font-semibold text-foreground">Password</label>
                                 <input className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary transition-all text-sm focus:rounded-md duration-200" required placeholder="••••••••" type="password" value={password} onChange={(e) => setPassword(e.target.value)}/>
                             </div>
-                            <button disabled={loading} className="w-full group flex items-center justify-center gap-2 px-6 py-3.5 mt-2 rounded-2xl font-semibold bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:bg-primary/85 hover:rounded-md active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer" type="submit">
+                            <button disabled={loading} className="w-full group flex items-center justify-center gap-2 px-6 py-3.5 mt-2 rounded-2xl font-semibold bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:bg-primary/85 hover:rounded-md active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-200  " type="submit">
                             {loading ? 'Signing In...' : 'Sign In'} <img src={arrow} alt="right arrow" />
                             </button>
                         </form>
