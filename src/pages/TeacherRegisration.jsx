@@ -11,7 +11,6 @@ function TeacherRegisration(){
     const [firstname, setFirstname] = useState('')
     const [middlename, setMiddlename] = useState('')
     const [lastname, setLastname] = useState('')
-    const [course, setCourse] = useState('')
     const [phone, setPhone] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
@@ -22,7 +21,6 @@ function TeacherRegisration(){
         setFirstname('')
         setMiddlename('')
         setLastname('')
-        setCourse('')
         setPhone('')
         setEmail('')
         setPassword('')
@@ -166,7 +164,7 @@ function TeacherRegisration(){
                             </div>
                             <div className='space-y-1.5'>
                                 <label className="text-sm font-semibold text-foreground">Confirm Password</label>
-                                <input required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm focus:rounded-md duration-200" placeholder="Min. 6 characters" minLength="8" maxLength="64" pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,64}" title="Password must be 8–64 characters and contain uppercase, lowercase, number, and special character." autocomplete="new-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}></input>
+                                <input required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm focus:rounded-md duration-200" placeholder="Min. 8 characters" minLength="8" maxLength="64" pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,64}" title="Password must be 8–64 characters and contain uppercase, lowercase, number, and special character." autocomplete="new-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}></input>
                             </div>
                             <button className="w-full group flex items-center justify-center gap-2 px-6 py-3.5 mt-2 rounded-2xl font-semibold bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:rounded-md active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer" type="submit">
                             {loading ? 'Registering...' : 'Submit Registration'} <img src={arrow} alt="right arrow" />
