@@ -39,7 +39,7 @@ function StudentPerformance() {
 
     return (
         <>
-            <div className='max-md:mt-10'>
+            <div className='max-md:mt-10 animate-fade-in [animation-delay:0ms]!'>
                 <div>
                     <h2 className='text-2xl font-bold'>
                         Performance Analytics
@@ -54,7 +54,7 @@ function StudentPerformance() {
             <div className='mt-6 grid md:grid-cols-2 gap-4'>
 
                 {/* SUBJECT STRENGTHS */}
-                <div className="w-full p-5 rounded-2xl shadow-sm shadow-gray-300">
+                <div className="w-full p-5 rounded-2xl shadow-sm shadow-gray-300 animate-fade-in [animation-delay:100ms]!">
                     <h1 className='font-bold text-2xl text-center'>
                         Subject Strengths
                     </h1>
@@ -115,7 +115,7 @@ function StudentPerformance() {
 
 
                 {/* GRADE TREND */}
-                <div className="w-full p-5 rounded-2xl shadow-sm shadow-gray-300">
+                <div className="w-full p-5 rounded-2xl shadow-sm shadow-gray-300 animate-fade-in [animation-delay:200ms]!">
 
                     <h1 className='font-bold text-2xl text-center'>
                         Overall Grade Trend

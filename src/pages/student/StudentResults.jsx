@@ -64,7 +64,7 @@ function StudentResults() {
 
   return (
     <>
-      <div className="max-md:mt-10">
+      <div className="max-md:mt-10 animate-fade-in [animation-delay:0ms]!">
         <div>
           <h2 className="text-2xl font-bold">My Results</h2>
           <p className="text-muted-foreground">
@@ -73,7 +73,7 @@ function StudentResults() {
         </div>
       </div>
 
-      <div className="mt-5 p-5 rounded-2xl mb-10 shadow-sm shadow-gray-300 border border-gray-100 bg-white">
+      <div className="mt-5 p-5 rounded-2xl mb-10 shadow-sm shadow-gray-300 border border-gray-100 bg-white animate-fade-in [animation-delay:100ms]!">
         {loading ? (
           <div className="h-50 flex justify-center items-center">
             <p className="text-muted-foreground animate-pulse">Loading exam results...</p>
