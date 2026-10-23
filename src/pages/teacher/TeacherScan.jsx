@@ -150,7 +150,7 @@ function TeacherScan(){
 
         //force a GC hint (Chrome only)
         if (window.gc) window.gc()
-        }
+    }
 
     useEffect(() => {
         if (window.jscanify) {
@@ -826,7 +826,7 @@ function TeacherScan(){
         }
         }
 
-        const exportStudentsToExcel = async () => {
+    const exportStudentsToExcel = async () => {
         if (!examStudents.length) {
             Swal.fire({ text: 'No data to export', icon: 'info' })
             return
@@ -907,6 +907,8 @@ function TeacherScan(){
             setIsExporting(false)
         }
     }
+
+    
     return(
         <>
             {/* EXAM CODE STUDENT LIST */}

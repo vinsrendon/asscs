@@ -23,6 +23,8 @@ function TeacherAnswerKeys(){
     
     const [isModalOpen, setIsModalOpen] = useState(false)
 
+    const [updatingStatus, setUpdatingStatus] = useState(null)
+
     const closeExamModal = () => {
         setIsModalOpen(false)
         setSubject('')
@@ -431,6 +433,45 @@ function TeacherAnswerKeys(){
         })
     }
     const [pdfPreview, setPdfPreview] = useState(null)
+    
+    const toggleStatus = async (examId) => {
+        if (updatingStatus !== null) return
+
+        setUpdatingStatus(examId)
+
+        try {
+            const response = await axios.patch(
+                `/exam/${examId}/status`
+            )
+
+            const updatedExam = response.data.exam
+
+            setExams(prev =>
+                prev.map(exam =>
+                    exam.id === updatedExam.id
+                        ? { ...exam, status: updatedExam.status }
+                        : exam
+                )
+            )
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Status Updated',
+                text: `Exam is now ${updatedExam.status}.`,
+                timer: 1500,
+                showConfirmButton: false
+            })
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Update Failed',
+                text: error.response?.data?.message ||
+                    'Failed to update exam status.'
+            })
+        } finally {
+            setUpdatingStatus(null)
+        }
+    }
 
     return(
         <>
@@ -634,7 +675,7 @@ function TeacherAnswerKeys(){
                     </tr>
                     </thead>
 
-                    <tbody key={exams} className="divide-y divide-gray-200 animate-table-body">
+                    <tbody key={`${exams}-${limit}-${page}`} className="divide-y divide-gray-200 animate-table-body">
                         {loading ? (
                             <tr>
                             <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
@@ -674,8 +715,25 @@ function TeacherAnswerKeys(){
                                 </span>
                                 </td>
                                 <td className="px-6 py-4 text-center">
-                                {exam.status}
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleStatus(exam.id)}
+                                        disabled={updatingStatus === exam.id}
+                                        title="Click to change exam status"
+                                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold cursor-pointer transition-all duration-200 hover:scale-105 ${
+                                            exam.status?.toUpperCase() === 'ACTIVE'
+                                                ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                                                : 'bg-red-100 text-red-800 hover:bg-red-200'
+                                        }`}
+                                    >
+                                        {exam.status?.toUpperCase() === 'ACTIVE'
+                                            ? 'ACTIVE'
+                                            : 'INACTIVE'}
+                                    </button>
                                 </td>
+                                {/* <td className="px-6 py-4 text-center">
+                                {exam.status}
+                                </td> */}
                                 <td className="px-6 py-4 text-center">
                                 {formatDate(exam.created_at)}
                                 </td>
@@ -741,7 +799,43 @@ function TeacherAnswerKeys(){
                         )}
                     </tbody>                    
                 </table>
-            </div>            
+            </div>   
+
+            {/* PAGINATION CONTROLS */}
+            <div className="flex justify-center items-center text-sm gap-4 my-2 flex-wrap">
+                <button
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    Previous
+                </button>
+                <span className="font-medium">Page {page} of {totalPages}</span>
+                <button
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    disabled={page >= totalPages}
+                    className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    Next
+                </button>
+                <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600">Show</span>
+                    <select
+                        value={limit}
+                        onChange={(e) => {
+                            setLimit(Number(e.target.value))
+                            setPage(1)
+                        }}
+                        className="px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                    </select>
+                    <span className="text-sm text-gray-600">entries</span>
+                </div>
+            </div>         
         </>
     )
 }

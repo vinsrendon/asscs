@@ -243,7 +243,7 @@ function TeacherStudents(){
                         </tr>
                     </thead>
 
-                    <tbody key={selected} className="divide-y divide-gray-200 text-center animate-table-body">
+                    <tbody key={`${selected}-${limit}-${page}`} className="divide-y divide-gray-200 text-center animate-table-body">
                         {students.map((student) => (
                             <tr key={student.uid} className={student.status === 'PENDING' ? "bg-red-300 hover:bg-red-200 transition-colors" : "hover:bg-gray-100 transition-colors"}>
                                 {/* STUDENT NAME */}
@@ -287,7 +287,40 @@ function TeacherStudents(){
                         ))}
                     </tbody>
                 </table>
-            </div>            
+            </div>    
+
+            {/* PAGINATION CONTROLS */}
+            <div className="flex justify-center items-center text-sm gap-4 by-2 flex-wrap mt-2">
+                <button
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    Previous
+                </button>
+                <span className="font-medium">Page {page} of {totalPages}</span>
+                <button
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    disabled={page >= totalPages}
+                    className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    Next
+                </button>
+                <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600">Show</span>
+                    <select
+                        value={limit}
+                        onChange={(e) => setLimit(Number(e.target.value))}
+                        className="px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                    </select>
+                    <span className="text-sm text-gray-600">entries</span>
+                </div>
+            </div>        
         </>
     )
 }
