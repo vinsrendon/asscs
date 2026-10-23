@@ -105,7 +105,10 @@ function StudentNav(){
                         </div>     
                     </div>
                 </div>
-                <NavLink to="#" onClick={logout} className="text-left py-2 px-13 rounded-2xl w-full text-2xl font-bold bg-[#12264F] hover:rounded-md transition-all duration-200 ease-linear">Sign out</NavLink>
+                <NavLink to="#" onClick={logout} className="flex flex-nowrap justify-center py-2 px-5 rounded-2xl w-full text-lg font-bold bg-[#12264F] hover:rounded-md transition-all duration-200 ease-linear hover:bg-rose-800"><svg  xmlns="http://www.w3.org/2000/svg" width="24" height="24"  
+                fill="currentColor" viewBox="0 0 24 24" >
+                <path d="M15 11H8v2h7v4l6-5-6-5z"></path><path d="M5 21h7v-2H5V5h7V3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2"></path>
+                </svg>Sign out</NavLink>
             </div>
         </aside>
         <button disabled={isDisabled} className="md:hidden max-md:fixed max-md:top-0 z-99 p-5 bg-nav flex items-center text-white focus:outline-none" onClick={toggleMenu}>
