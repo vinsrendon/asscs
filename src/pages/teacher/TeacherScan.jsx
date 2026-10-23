@@ -1,10 +1,17 @@
 import { useRef, useState, useEffect } from 'react'
 import Swal from 'sweetalert2'
 import { PaddleOcrService } from 'ppu-paddle-ocr/web'
-// import axios from '../../../axios-config'
-
+import axios from '../../../axios-config'
+import ExcelJS from 'exceljs'
+import Modal from '../modal.jsx'
 
 function TeacherScan(){  
+    const [showStudentsModal, setShowStudentsModal] = useState(false)
+    const [examStudents, setExamStudents] = useState([])
+    const [loadingStudents, setLoadingStudents] = useState(false)
+    const [selectedExamCode, setSelectedExamCode] = useState('')
+    const [isExporting, setIsExporting] = useState(false)
+
     const videoRef = useRef(null)
     const canvasRef = useRef(null)
     const resultCanvasRef = useRef(null)
@@ -22,7 +29,8 @@ function TeacherScan(){
     const [editAnswers, setEditAnswers] = useState([])
     const [numQuestions, setNumQuestions] = useState('')
 
-    // const [isChecking, setIsChecking] = useState(false)
+    // eslint-disable-next-line no-unused-vars
+    const [isChecking, setIsChecking] = useState(false)
     const [checkResult, setCheckResult] = useState(null)
 
     const ocrRef = useRef(null)
@@ -30,6 +38,14 @@ function TeacherScan(){
     const intervalRef = useRef(null)
     const scannerRef = useRef(null)
     const resultImageRef = useRef(null)
+
+    const [bulkProgress, setBulkProgress] = useState({
+        current: 0,
+        total: 0
+    })
+
+    const [bulkResults, setBulkResults] = useState([])
+    const [isBulkUploading, setIsBulkUploading] = useState(false)
 
     const stopMediaStream = (stream) => {
     if (stream) {
@@ -79,6 +95,14 @@ function TeacherScan(){
     }
 
     const clearResult = () => {
+        setShowStudentsModal(false)
+    setExamStudents([])
+    setSelectedExamCode('')
+
+        setBulkResults([])
+        setBulkProgress({ current: 0, total: 0 })
+        setIsBulkUploading(false)
+    
         if (intervalRef.current) {
             clearInterval(intervalRef.current)
             intervalRef.current = null
@@ -118,6 +142,7 @@ function TeacherScan(){
         setIsUploading(false)
         setIsCameraOn(false)
         setCheckResult(null)
+        setBulkResults(null)
 
         if (fileInputRef.current) {
             fileInputRef.current.value = ''
@@ -134,12 +159,24 @@ function TeacherScan(){
             console.error('jscanify is not loaded')
         }
 
-        const ocr = new PaddleOcrService()
-        ocr.initialize()
-            .then(() => {
-                ocrRef.current = ocr
-            })
-            .catch((err) => console.error('PaddleOCR failed to initialize:', err))
+        if (!ocrRef.current) {
+            const ocr = new PaddleOcrService();
+            ocrRef.current = ocr;
+
+            ocr.initialize()
+                .then(() => {
+                    console.log("PaddleOCR initialized successfully");
+                })
+                .catch((err) => {
+                    console.error("PaddleOCR failed to initialize:", err);
+
+                    if (ocrRef.current === ocr) {
+                        ocrRef.current = null;
+                    }
+
+                    ocr.destroy();
+                });
+        }
 
         return () => {
             stopCamera()
@@ -208,47 +245,6 @@ function TeacherScan(){
         }
     }    
 
-    const uploadImage = (e) => {        
-        const file = e.target.files?.[0]
-        if (!file || !scannerRef.current) return
-
-        setIsUploading(true)
-
-        if (intervalRef.current) {
-            clearInterval(intervalRef.current)
-            intervalRef.current = null
-        }
-        if (resultCanvasRef.current) {
-            resultCanvasRef.current.width = 0
-            resultCanvasRef.current.height = 0
-        }
-        
-        const reader = new FileReader()
-        reader.onload = (event) => {            
-            const img = new Image()
-            img.onload = () => {
-                processShadedSheet(img)
-                setIsUploading(false)
-            }
-            img.onerror = () => {
-                setIsUploading(false)
-                Swal.fire({
-                    text:"Failed to load the selected image.",
-                    icon:"error"
-                }); 
-            }
-            img.src = event.target.result
-        }
-        reader.onerror = () => {
-            setIsUploading(false)
-            Swal.fire({
-                text:"Failed to read the file.",
-                icon:"error"
-            }); 
-        }
-        reader.readAsDataURL(file)        
-    }
-
     const capturePaper = () => {
         setIsCameraOn(false)
         if (!videoRef.current || !scannerRef.current) return        
@@ -265,15 +261,29 @@ function TeacherScan(){
         const newImg = new Image()
         newImg.src = dataURL
 
-        newImg.onload = () => {
-            const extracted = scannerRef.current.extractPaper(
-                newImg,
-                video.videoWidth,
-                video.videoHeight
-            )
+        newImg.onload = async () => {
+            try {
+                const extracted = scannerRef.current.extractPaper(
+                    newImg,
+                    video.videoWidth,
+                    video.videoHeight
+                )
 
-            if (extracted) {
-                processShadedSheet(extracted)
+                if (extracted) {
+                    await processShadedSheet(extracted)
+                } else {
+                    Swal.fire({
+                        text: 'Could not detect the answer sheet.',
+                        icon: 'warning'
+                    })
+                }
+            } catch (err) {
+                console.error('Capture failed:', err)
+
+                Swal.fire({
+                    text: 'Failed to capture the answer sheet.',
+                    icon: 'error'
+                })
             }
         }
 
@@ -282,120 +292,118 @@ function TeacherScan(){
             resultCanvasRef.current.height = 0
         }
     }
-
+    
     const extractHeaderData = async (src, cv) => {
         if (!ocrRef.current) {
-            console.warn("PaddleOCR service is not initialized yet.")
-            return { examId: "", studentId: "" }
+            return { examId: "", studentId: "" };
         }
 
-        const gray = new cv.Mat()
-        const thresh = new cv.Mat()
+        const width = src.cols;
+        const height = src.rows;
 
-        cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY)
-        cv.adaptiveThreshold(
-            gray,
-            thresh,
-            255,
-            cv.ADAPTIVE_THRESH_GAUSSIAN_C,
-            cv.THRESH_BINARY_INV,
-            15,
-            8
-        )
+        // Capture the complete header, including both printed labels.
+        const x = 0;
+        const y = Math.round(height * 0.025);
+        const w = width;
+        const h = Math.round(height * 0.055);
 
-        const contours = new cv.MatVector()
-        const hierarchy = new cv.Mat()
-        cv.findContours(thresh, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+        const roi = src.roi(new cv.Rect(x, y, w, h));
+        const tempCanvas = document.createElement("canvas");
 
-        const boundingBoxes = []
-        const maxYThreshold = src.rows * 0.35 // Restrict to top 35% of paper
+        try {
+            cv.imshow(tempCanvas, roi);
 
-        for (let i = 0; i < contours.size(); i++) {
-            const rect = cv.boundingRect(contours.get(i))
-            const aspect = rect.width / rect.height
+            // Enlarge the header before recognition.
+            const canvas = document.createElement("canvas");
+            canvas.width = tempCanvas.width * 2;
+            canvas.height = tempCanvas.height * 2;
 
-            // Filter for input box outlines
-            if (rect.y < maxYThreshold && rect.width > 120 && rect.height > 20 && aspect > 1.8) {
-                boundingBoxes.push(rect)
-            }
+            const ctx = canvas.getContext("2d");
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = "high";
+            ctx.drawImage(
+                tempCanvas,
+                0, 0,
+                canvas.width,
+                canvas.height
+            );
+
+            const result = await ocrRef.current.recognize(canvas)
+
+            const { examId, studentId } = parseHeaderOCR(result?.text)
+            console.log("HEADER OCR:", result?.text)
+            console.log("Parsed exam code:", examId)
+            console.log("Parsed student ID:", studentId)
+
+            return { examId, studentId }
+        } finally {
+            roi.delete();
         }
-
-        // Sort bounding boxes vertically (top to bottom: EXAM ID is first, STUDENT ID is second)
-        boundingBoxes.sort((a, b) => a.y - b.y)
-
-        // Deduplicate overlapping bounding boxes
-        const filteredBoxes = boundingBoxes.filter((box, idx, self) => 
-            idx === 0 || Math.abs(box.y - self[idx - 1].y) > 15
-        )
-
-        const runOcrOnRegion = async (rect) => {
-            const roi = src.roi(rect)
-            const cropCanvas = document.createElement('canvas')
-            const scaleFactor = 2 
-
-            cropCanvas.width = roi.cols * scaleFactor
-            cropCanvas.height = roi.rows * scaleFactor
-
-            const tempCanvas = document.createElement('canvas')
-            cv.imshow(tempCanvas, roi)
-
-            const ctx = cropCanvas.getContext('2d')
-            ctx.imageSmoothingEnabled = true
-            ctx.drawImage(tempCanvas, 0, 0, cropCanvas.width, cropCanvas.height)
-
-            roi.delete()
-
-            try {
-                const ocrResult = await ocrRef.current.recognize(cropCanvas)
-                return ocrResult?.text?.trim() || ""
-            } catch (err) {
-                console.error("PaddleOCR Region Error:", err)
-                return ""
-            }
-        }
-
-        let extractedExamId = ""
-        let extractedStudentId = ""
-
-        if (filteredBoxes.length >= 2) {
-            // Box 0 = EXAM ID, Box 1 = STUDENT ID
-            const rawExam = await runOcrOnRegion(new cv.Rect(filteredBoxes[0].x, filteredBoxes[0].y, filteredBoxes[0].width, filteredBoxes[0].height))
-            const rawStudent = await runOcrOnRegion(new cv.Rect(filteredBoxes[1].x, filteredBoxes[1].y, filteredBoxes[1].width, filteredBoxes[1].height))
-
-            extractedExamId = rawExam
-            extractedStudentId = rawStudent.replace(/\D/g, '') // Keep digits only for Student ID
-        } else if (filteredBoxes.length === 1) {
-            // Fallback if only 1 box is detected: treat as Student ID
-            const rawStudent = await runOcrOnRegion(new cv.Rect(filteredBoxes[0].x, filteredBoxes[0].y, filteredBoxes[0].width, filteredBoxes[0].height))
-            extractedStudentId = rawStudent.replace(/\D/g, '')
-        }
-
-        gray.delete()
-        thresh.delete()
-        contours.delete()
-        hierarchy.delete()
-
-        return { examId: extractedExamId, studentId: extractedStudentId }
     }
 
+    function parseHeaderOCR(ocrText) {
+        const text = (ocrText || "")
+            .toUpperCase()
+            .replace(/EXAM\s*CODE/gi, "EXAM CODE")
+            .replace(/STUDENT\s*ID/gi, "STUDENT ID");
+
+        // Extract the exam code between the labels.
+        const examSection =
+            text.split(/STUDENT\s*ID/i)[0] || "";
+
+        const examId = (
+            examSection.match(
+                /EXAM\s*CODE\s*[:\-]?\s*([A-Z0-9\s]+)/i
+            )?.[1] || ""
+        ).replace(/[^A-Z0-9]/g, "");
+
+        // Extract everything after STUDENT ID.
+        const studentSection =
+            text.split(/STUDENT\s*ID/i)[1] || "";
+
+        // Correct common OCR substitutions before removing spaces.
+        const correctedStudentText = studentSection
+        .replace(/④/g, "6")
+        .replace(/[〇ＯOQD]/g, "0")
+        .replace(/[^0-9]/g, "");
+
+        const studentId = correctedStudentText;
+
+        return { examId, studentId };
+    }
+
+
     const processShadedSheet = async(extractedCanvas) => {
+        const scanData = {
+            examId: '',
+            studentId: '',
+            answers: [],
+            status: 'Failed'
+        }
+
         const cv = window.cv
         if (!cv || !extractedCanvas) {
             Swal.fire({
                 text:"OpenCV not ready or no canvas",
                 icon:"error"
             }); 
-            return
+            return scanData
         }
 
         let src, display, gray, blurred, thresh, contours, hierarchy
 
         try {
             src = cv.imread(extractedCanvas)
+            
+            
 
             // Extract Exam ID and Student ID
             const { examId: parsedExamId, studentId: parsedStudentId } = await extractHeaderData(src, cv)
+            console.log(parsedExamId);
 
+            scanData.examId = parsedExamId
+            scanData.studentId = parsedStudentId
+            
             setExamId(parsedExamId)
             setStudentId(parsedStudentId)
 
@@ -445,11 +453,15 @@ function TeacherScan(){
             }
 
             if (candidates.length < 10) {
+                scanData.status = 'Failed'
+                scanData.error = 'Too few candidates found'
+
                 Swal.fire({
-                    text:"Too few candidates found",
-                    icon:"warning"
+                    text: 'Too few candidates found',
+                    icon: 'warning'
                 })
-                return
+
+                return scanData
             }
 
             const sizes = candidates.map(c => c.size).sort((a, b) => a - b)
@@ -627,6 +639,31 @@ function TeacherScan(){
             setEditAnswers(allResults.map(a => ({ ...a })))
             setNumQuestions(allResults.length.toString())
             setIsEditing(false)
+
+            // Automatically check the scanned answers
+            if (parsedExamId && parsedStudentId && allResults.length > 0) {
+                await checkAnswers(
+                    parsedExamId,
+                    parsedStudentId,
+                    allResults
+                )
+            } else {
+                Swal.fire({
+                    title: 'Scan completed',
+                    text: 'Could not automatically check answers. Please verify the Exam ID, Student ID, and detected answers.',
+                    icon: 'warning'
+                })
+            }
+
+            // return {
+            //     examId: parsedExamId,
+            //     studentId: parsedStudentId,
+            //     answers: allResults,
+            //     status: 'Success'
+            // }
+            scanData.answers = allResults
+            scanData.status = 'Success'
+            return scanData
         } catch (err) {
             console.error('processShadedSheet error:', err)
             Swal.fire({ 
@@ -644,102 +681,314 @@ function TeacherScan(){
         }        
     }
 
-    // const startEditing = () => {
-    //     setEditExamId(examId)
-    //     setEditStudentId(studentId)
-    //     setEditAnswers(answers.map(a => ({ ...a })))
-    //     setNumQuestions(answers.length.toString())
-    //     setIsEditing(true)
-    // }
+    const checkAnswers = async (
+        examCode = examId,
+        currentStudentId = studentId,
+        studentAnswers = answers
+    ) => {
+        if (
+            !examCode?.trim() ||
+            !currentStudentId?.trim() ||
+            !studentAnswers?.length
+        ) {
+            Swal.fire({
+                text: 'Exam ID, Student ID, and answers are required.',
+                icon: 'warning'
+            })
+            return
+        }
 
-    // const cancelEditing = () => {
-    //     setIsEditing(false)
-    // }
+        setIsChecking(true)
+        setCheckResult(null)
 
-    // const applyCorrections = () => {
-    //     setExamId(editExamId.trim())
-    //     setStudentId(editStudentId.trim())
-    //     setAnswers(editAnswers)
-    //     setIsEditing(false)
+        try {
+            const res = await axios.post('/exam/check', {
+                examCode: examCode.trim(),
+                studentId: currentStudentId.trim(),
+                studentAnswers
+            })
 
-    //     Swal.fire({
-    //         icon: 'success',
-    //         title: 'Corrections applied',
-    //         timer: 1500,
-    //         showConfirmButton: false
-    //     })
-    // }
+            const result = res.data.result
+            console.log(result.data);
+            
+            setCheckResult(result)
 
-    const updateAnswer = (questionNumber, newAnswer) => {
-        setEditAnswers(prev =>
-            prev.map(item =>
-            item.question === questionNumber
-                ? { ...item, answer: newAnswer }
-                : item
-            )
-        )
-    }
+            await Swal.fire({
+                title: `Score: ${result.score}%`,
+                html: `
+                    <p><b>${result.correct}</b> correct out of
+                    <b>${result.total}</b></p>
+                    <p>${result.exam.title}</p>
+                    <p class="text-sm text-gray-500 mt-2">
+                        Result saved successfully
+                    </p>
+                `,
+                icon: result.score >= 75 ? 'success' : 'info'
+            })
+        } catch (err) {
+            console.error('Answer checking failed:', err)
 
-    const applyNumQuestions = () => {
-        const n = parseInt(numQuestions, 10)
-        if (isNaN(n) || n < 1) return
+            Swal.fire({
+                title: 'Checking failed',
+                text: err.response?.data?.message ||
+                    'Failed to check answers. Please verify the Exam ID and Student ID.',
+                icon: 'error'
+            })
+        } finally {
+            setIsChecking(false)
+        }
+    }  
 
-        setEditAnswers(prev => {
-            const current = [...prev]
-            if (current.length < n) {
-            for (let i = current.length + 1; i <= n; i++) {
-                current.push({ question: i, answer: '?', fills: [] })
+    const handleBulkUpload = async (e) => {
+        const files = Array.from(e.target.files || [])
+        if (!files.length || !scannerRef.current) return
+
+        setIsBulkUploading(true)
+        setBulkProgress({ current: 0, total: files.length })
+        setBulkResults([])
+
+        const results = []
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i]
+            setBulkProgress({ current: i + 1, total: files.length })
+
+            try {
+                // Load file into Image object
+                const img = await new Promise((resolve, reject) => {
+                    const reader = new FileReader()
+                    reader.onload = (event) => {
+                        const image = new Image()
+                        image.onload = () => resolve(image)
+                        image.onerror = reject
+                        image.src = event.target.result
+                    }
+                    reader.onerror = reject
+                    reader.readAsDataURL(file)
+                })
+
+                const scanData = await processShadedSheet(img)
+                console.log(scanData);
+                
+                results.push({
+                    fileName: file.name,
+                    examId: scanData?.examId || '',
+                    studentId: scanData?.studentId || '',
+                    answersCount: scanData?.answers?.length || 0,
+                    status: scanData?.status || 'Success'
+                })
+            } catch (err) {
+                console.error(`Error processing ${file.name}:`, err)
+                results.push({
+                    fileName: file.name,
+                    status: 'Failed',
+                    error: err.message || 'Processing failed'
+                })
             }
-            } else if (current.length > n) {
-            return current.slice(0, n)
-            }
-            return current
+        }
+
+        setBulkResults(results)
+        setIsBulkUploading(false)
+
+        Swal.fire({
+            title: 'Scan Complete',
+            text: `Successfully processed ${results.filter(r => r.status === 'Success').length} of ${files.length} sheets.`,
+            icon: 'success'
         })
     }
+   
+    const fetchStudentsByExam = async (code) => {
+        if (!code?.trim()) {
+            Swal.fire({ text: 'No exam code detected', icon: 'warning' })
+            return
+        }
 
-    // const checkAnswers = async () => {
-    //     if (!examId || !studentId || answers.length === 0) {
-    //         Swal.fire({
-    //         text: 'Exam ID, Student ID and answers are required',
-    //         icon: 'warning'
-    //         })
-    //         return
-    //     }
+        setSelectedExamCode(code.trim().toUpperCase())
+        setLoadingStudents(true)
+        setShowStudentsModal(true)
+        setExamStudents([])
 
-    //     setIsChecking(true)
-    //     setCheckResult(null)
+        try {
+            const res = await axios.get(
+            `/exam/${encodeURIComponent(code.trim())}/students`
+            )
+            setExamStudents(res.data.students || [])
+        } catch (err) {
+            console.error(err)
+            Swal.fire({
+            title: 'Failed to load students',
+            text: err.response?.data?.message || 'Could not fetch students for this exam',
+            icon: 'error'
+            })
+            setShowStudentsModal(false)
+        } finally {
+            setLoadingStudents(false)
+        }
+        }
 
-    //     try {
-    //         const res = await axios.post('/exam/check', {
-    //             examCode: examId.trim(),
-    //             studentId: studentId.trim(),
-    //             studentAnswers: answers
-    //         })
+        const exportStudentsToExcel = async () => {
+        if (!examStudents.length) {
+            Swal.fire({ text: 'No data to export', icon: 'info' })
+            return
+        }
 
-    //         setCheckResult(res.data.result)
+        setIsExporting(true)
 
-    //         Swal.fire({
-    //         title: `Score: ${res.data.result.score}%`,
-    //         html: `
-    //             <p><b>${res.data.result.correct}</b> correct out of <b>${res.data.result.total}</b></p>
-    //             <p>${res.data.result.exam.title}</p>
-    //             <p class="text-sm text-gray-500 mt-2">Result saved successfully</p>
-    //         `,
-    //         icon: res.data.result.score >= 75 ? 'success' : 'info'
-    //         })
-    //     } catch (err) {
-    //         console.error(err)
-    //         Swal.fire({
-    //         text: err.response?.data?.message || 'Failed to check answers',
-    //         icon: 'error'
-    //         })
-    //     } finally {
-    //         setIsChecking(false)
-    //     }
-    // }
-  
+        try {
+            const workbook = new ExcelJS.Workbook()
+            workbook.creator = 'Exam Scanner'
+            workbook.created = new Date()
+
+            const sheet = workbook.addWorksheet('Results', {
+            views: [{ state: 'frozen', ySplit: 1 }]
+            })
+
+            sheet.columns = [
+            { header: '#', key: 'n', width: 6 },
+            { header: 'Student / Applicant ID', key: 'id', width: 18 },
+            { header: 'First Name', key: 'fname', width: 14 },
+            { header: 'Middle Name', key: 'mname', width: 14 },
+            { header: 'Last Name', key: 'lname', width: 14 },
+            { header: 'Course', key: 'course', width: 14 },
+            { header: 'Score (%)', key: 'score', width: 12 },
+            { header: 'Exam Code', key: 'examCode', width: 14 },
+            { header: 'Exam Title', key: 'examTitle', width: 24 },
+            { header: 'Subject', key: 'subject', width: 14 },
+            { header: 'Type', key: 'type', width: 12 },
+            { header: 'Total Items', key: 'totalItems', width: 12 }
+            ]
+
+            // Header style
+            sheet.getRow(1).eachCell((cell) => {
+            cell.font = { bold: true, color: { argb: 'FFFFFFFF' } }
+            cell.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'FF2563EB' }
+            }
+            cell.alignment = { vertical: 'middle', horizontal: 'center' }
+            })
+
+            examStudents.forEach((s, i) => {
+            sheet.addRow({
+                n: i + 1,
+                id: s.student_id,
+                fname: s.fname || '',
+                mname: s.mname || '',
+                lname: s.lname || '',
+                course: s.course || '',
+                score: s.score,
+                examCode: s.exam_code,
+                examTitle: s.exam_title || '',
+                subject: s.subject || '',
+                type: s.type || '',
+                totalItems: s.total_items
+            })
+            })
+
+            // Center score column
+            sheet.getColumn('score').alignment = { horizontal: 'center' }
+            sheet.getColumn('n').alignment = { horizontal: 'center' }
+
+            const buffer = await workbook.xlsx.writeBuffer()
+            const blob = new Blob([buffer], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `${selectedExamCode || 'exam'}_results.xlsx`
+            a.click()
+            URL.revokeObjectURL(url)
+        } catch (err) {
+            console.error(err)
+            Swal.fire({ text: 'Failed to export Excel', icon: 'error' })
+        } finally {
+            setIsExporting(false)
+        }
+    }
     return(
         <>
+            {/* EXAM CODE STUDENT LIST */}
+            <Modal
+            isOpen={showStudentsModal}
+            onClose={() => setShowStudentsModal(false)}
+            >
+            <div className="mt-2">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div>
+                    <h2 className="text-xl font-bold text-gray-800">
+                    Students – {selectedExamCode}
+                    </h2>
+                    <p className="text-sm text-gray-500">
+                    {loadingStudents
+                        ? 'Loading...'
+                        : `${examStudents.length} student(s) have taken this exam`}
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    onClick={exportStudentsToExcel}
+                    disabled={loadingStudents || isExporting || examStudents.length === 0}
+                    className="px-4 py-2 bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white font-semibold rounded-xl transition cursor-pointer"
+                >
+                    {isExporting ? 'Exporting...' : 'Export Excel'}
+                </button>
+                </div>
+
+                {loadingStudents ? (
+                <div className="text-center py-10 text-gray-500">Loading students...</div>
+                ) : examStudents.length === 0 ? (
+                <div className="text-center py-10 text-gray-500">
+                    No students have taken this exam yet.
+                </div>
+                ) : (
+                <div className="overflow-x-auto max-h-96 overflow-y-auto border rounded-xl">
+                    <table className="w-full text-left text-sm border-collapse">
+                    <thead className="bg-gray-50 sticky top-0 border-b">
+                        <tr>
+                        <th className="p-3 font-semibold">#</th>
+                        <th className="p-3 font-semibold">ID</th>
+                        <th className="p-3 font-semibold">Name</th>
+                        <th className="p-3 font-semibold">Course</th>
+                        <th className="p-3 font-semibold">Score</th>
+                        <th className="p-3 font-semibold">Exam</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                        {examStudents.map((s, idx) => (
+                        <tr key={s.result_id || idx} className="hover:bg-gray-50">
+                            <td className="p-3">{idx + 1}</td>
+                            <td className="p-3 font-medium">{s.student_id}</td>
+                            <td className="p-3">
+                            {[s.fname, s.mname, s.lname].filter(Boolean).join(' ') || '—'}
+                            </td>
+                            <td className="p-3">{s.course || '—'}</td>
+                            <td className="p-3">
+                            <span
+                                className={`font-semibold ${
+                                s.score >= 75
+                                    ? 'text-green-600'
+                                    : s.score >= 50
+                                    ? 'text-yellow-600'
+                                    : 'text-red-600'
+                                }`}
+                            >
+                                {s.score}%
+                            </span>
+                            </td>
+                            <td className="p-3 text-gray-600">
+                            {s.exam_title || s.exam_code}
+                            </td>
+                        </tr>
+                        ))}
+                    </tbody>
+                    </table>
+                </div>
+                )}
+            </div>
+            </Modal>
             <div className='max-md:mt-10 mx-2 md:mx-6'>
                 <div>
                 <h2 className='text-2xl font-bold'>Scan Answer Sheet</h2>
@@ -759,15 +1008,17 @@ function TeacherScan(){
                         <button onClick={capturePaper} className='cursor-pointer font-bold text-2xl leading-none bg-green-300 hover:bg-green-400 p-2 rounded-xl hover:rounded-sm duration-200 transition-all animate-fade-in [animation-delay:200ms]!'>Capture</button>
                         <button 
                             onClick={() => fileInputRef.current?.click()} 
+                            disabled={isUploading || isBulkUploading}
                             className='cursor-pointer font-bold text-2xl leading-none bg-blue-300 hover:bg-blue-400 p-1 rounded-xl hover:rounded-sm duration-200 transition-all animate-fade-in [animation-delay:300ms]!'
                         >
-                            {isUploading ? 'Uploading...' : 'Upload'}
+                            {isUploading ? 'Processing...' : 'Upload'}
                         </button>
                         <input
                             ref={fileInputRef}
                             type="file"
                             accept="image/*"
-                            onChange={uploadImage}
+                            onChange={handleBulkUpload}
+                            multiple
                             className="hidden"
                         />
                     </div>
@@ -788,55 +1039,32 @@ function TeacherScan(){
                         <h1 className='font-bold text-2xl leading-none'>Scan Results</h1>
                         <div className="flex justify-around gap-1">
                             <button onClick={clearResult} className='cursor-pointer font-bold text-2xl leading-none bg-yellow-300 hover:bg-yellow-400 p-2 rounded-xl hover:rounded-sm duration-200 transition-all animate-fade-in'>Clear</button>
-                            {/* {!isEditing ? (
-                                <button
-                                    onClick={startEditing}
-                                    disabled={answers.length === 0 && !examId && !studentId}
-                                    className='cursor-pointer font-bold text-lg bg-blue-300 hover:bg-blue-400 px-3 py-1 rounded-md disabled:opacity-50'
-                                >
-                                    Correct / Edit
-                                </button>
-                            ) : (
-                                <>
-                                    <button
-                                    onClick={applyCorrections}
-                                    className='cursor-pointer font-bold text-lg bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md'
-                                    >
-                                    Apply Corrections
-                                    </button>
-                                    <button
-                                    onClick={cancelEditing}
-                                    className='cursor-pointer font-bold text-lg bg-gray-300 hover:bg-gray-400 px-3 py-1 rounded-md'
-                                    >
-                                    Cancel
-                                    </button>
-                                </>
-                            )}
-                            <button
-                            onClick={checkAnswers}
-                            disabled={isChecking || answers.length === 0 || !examId}
-                            className="cursor-pointer font-bold text-lg bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded-md disabled:opacity-50"
-                            >
-                            {isChecking ? 'Checking...' : 'Check Score'}
-                            </button> */}
                         </div>
                     </div> 
                     <div className="flex flex-col gap-3 mb-4 text-gray-800 w-full text-left bg-white p-4 rounded-xl shadow-inner">
-                        <div className="flex flex-wrap items-center gap-3">
-                            <label className="font-bold text-lg min-w-27.5">Exam ID:</label>
-                            {isEditing ? (
-                            <input
-                                type="text"
-                                value={editExamId}
-                                onChange={(e) => setEditExamId(e.target.value)}
-                                className="border border-gray-300 rounded-md px-3 py-1.5 flex-1 max-w-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                placeholder="Enter Exam Code"
-                            />
-                            ) : (
+                        {/* <div className="flex flex-wrap items-center gap-3">
+                            <label className="font-bold text-lg min-w-27.5">Exam ID:</label>                            
+                            
                             <span className="text-blue-600 font-semibold text-lg">
                                 {isUploading ? 'Reading...' : (examId || 'Not Detected')}
                             </span>
-                            )}
+                        </div> */}
+                        <div className="flex flex-wrap items-center gap-3">
+                        <label className="font-bold text-lg min-w-27.5">Exam ID:</label>
+                        {examId ? (
+                            <button
+                            type="button"
+                            onClick={() => fetchStudentsByExam(examId)}
+                            className="text-blue-600 font-semibold text-lg underline hover:text-blue-800 cursor-pointer"
+                            title="View students who took this exam"
+                            >
+                            {examId}
+                            </button>
+                        ) : (
+                            <span className="text-blue-600 font-semibold text-lg">
+                            {isUploading ? 'Reading...' : 'Not Detected'}
+                            </span>
+                        )}
                         </div>
 
                         <div className="flex flex-wrap items-center gap-3">
@@ -855,113 +1083,65 @@ function TeacherScan(){
                             </span>
                             )}
                         </div>
-
-                        {/* Optional: Number of Questions */}
-                        {isEditing && (
-                            <div className="flex flex-wrap items-center gap-3 mt-1">
-                            <label className="font-bold text-lg min-w-27.5"># Questions:</label>
-                            <input
-                                type="number"
-                                min="1"
-                                value={numQuestions}
-                                onChange={(e) => setNumQuestions(e.target.value)}
-                                className="border border-gray-300 rounded-md px-3 py-1.5 w-24 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                            />
-                            <button
-                                onClick={applyNumQuestions}
-                                className="text-sm bg-blue-100 hover:bg-blue-200 px-2 py-1 rounded"
-                            >
-                                Apply
-                            </button>
-                            </div>
-                        )}
                     </div>
-                    <div className='text-white p-2 text-lg md:text-2xl text-center rounded-2xl flex md:flex-row flex-wrap justify-around gap-4 h-fit md:h-full'>                        
-                        <div className={`justify-center items-center bg-blue-50 rounded-2xl py-5 w-full ${showResultImage ? 'flex':'hidden'}`}>
-                            {answers.length > 0 ? (
-                                <div className="w-full overflow-auto max-h-125">
-                                    <table className="w-full border-collapse text-gray-800">
-                                        <thead className="sticky top-0 bg-blue-200">
-                                            <tr>
-                                                <th className="border border-gray-300 px-4 py-2 text-center">
-                                                    Question
-                                                </th>
-                                                <th className="border border-gray-300 px-4 py-2 text-center">
-                                                    Answer
-                                                </th>
+                    {/* Bulk Results Summary */}
+                    {(bulkResults?.length ?? 0) > 0 && !isBulkUploading && (
+                        <div className="my-6 p-5 bg-white border border-gray-200 rounded-2xl shadow-sm">
+                            <div className="flex flex-wrap justify-between items-center mb-4 gap-4">
+                                <div>
+                                    <h3 className="font-bold text-xl text-gray-800">Bulk Scan Summary</h3>
+                                    <p className="text-sm text-gray-500">Overview of all processed answer sheets</p>
+                                </div>
+                                
+                                {/* Quick Stats Badges */}
+                                <div className="flex gap-2">
+                                    <span className="px-3 py-1 bg-blue-50 text-blue-700 font-semibold text-sm rounded-lg border border-blue-100">
+                                        Total: {bulkResults.length}
+                                    </span>
+                                    <span className="px-3 py-1 bg-green-50 text-green-700 font-semibold text-sm rounded-lg border border-green-100">
+                                        Success: {bulkResults.filter(r => r.status === 'Success').length}
+                                    </span>
+                                    <span className="px-3 py-1 bg-red-50 text-red-700 font-semibold text-sm rounded-lg border border-red-100">
+                                        Failed: {bulkResults.filter(r => r.status === 'Failed').length}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Summary Table */}
+                            <div className="overflow-x-auto max-h-80 overflow-y-auto border rounded-xl">
+                                <table className="w-full text-left border-collapse text-sm">
+                                    <thead className="bg-gray-50 sticky top-0 text-gray-600 border-b">
+                                        <tr>
+                                            <th className="p-3 font-semibold">File Name</th>
+                                            <th className="p-3 font-semibold">Exam ID</th>
+                                            <th className="p-3 font-semibold">Student ID</th>
+                                            <th className="p-3 font-semibold">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100">
+                                        {bulkResults.map((res, idx) => (
+                                            <tr key={idx} className="hover:bg-gray-50/50">
+                                                <td className="p-3 font-medium text-gray-800 truncate max-w-xs" title={res.fileName}>
+                                                    {res.fileName}
+                                                </td>
+                                                <td className="p-3 text-gray-600">{res.examId || '—'}</td>
+                                                <td className="p-3 text-gray-600">{res.studentId || '—'}</td>
+                                                <td className="p-3">
+                                                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                                                        res.status === 'Success' 
+                                                            ? 'bg-green-100 text-green-700' 
+                                                            : 'bg-red-100 text-red-700'
+                                                    }`}>
+                                                        {res.status}
+                                                    </span>
+                                                </td>
                                             </tr>
-                                        </thead>
-
-                                        <tbody>
-                                            {(isEditing ? editAnswers : answers).map((item) => (
-                                                <tr
-                                                    key={item.question}
-                                                    className="hover:bg-blue-100"
-                                                >
-                                                    <td className="border border-gray-300 px-4 py-2">
-                                                        {item.question}
-                                                    </td>
-
-                                                    <td className="border border-gray-300 px-4 py-2 text-center">
-                                                        {isEditing ? (
-                                                            <select
-                                                            value={item.answer}
-                                                            onChange={(e) => updateAnswer(item.question, e.target.value)}
-                                                            className={`font-bold rounded px-2 py-1 border ${
-                                                                item.answer === '?' ? 'text-red-500 border-red-300' : 'text-green-600 border-green-300'
-                                                            }`}
-                                                            >
-                                                            <option value="A">A</option>
-                                                            <option value="B">B</option>
-                                                            <option value="C">C</option>
-                                                            <option value="D">D</option>
-                                                            <option value="?">?</option>
-                                                            </select>
-                                                        ) : (
-                                                            <span className={`font-bold ${item.answer === '?' ? 'text-red-500' : 'text-green-600'}`}>
-                                                            {item.answer}
-                                                            </span>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            ) : (
-                                <div className={`flex items-center justify-center h-full text-gray-500 ${showResultImage ? 'block object-contain':'hidden object-contain'}`}>
-                                    No answers detected
-                                </div>
-                            )}
-                        </div>
-                        {checkResult && (
-                            <div className="mt-6 p-4 bg-blue-300 rounded-xl">
-                                <h3 className="text-xl font-bold mb-2">
-                                Score: {checkResult.score}% ({checkResult.correct}/{checkResult.total})
-                                </h3>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-                                {checkResult.details.map((item) => (
-                                    <div
-                                    key={item.question}
-                                    className={`p-2 rounded ${item.isCorrect ? 'bg-green-400' : 'bg-red-400'}`}
-                                    >
-                                    Q{item.question}: {item.studentAnswer} 
-                                    {!item.isCorrect && ` (Correct: ${item.correctAnswer})`}
-                                    </div>
-                                ))}
-                                </div>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
-                        )}
-                        <div className={`justify-center items-center bg-blue-50 rounded-2xl py-5 w-full ${showResultImage ? 'flex':'hidden'}`}>
-                            <img ref={resultImageRef} alt="scanned page result"  
-                            onClick={() => {
-                                if (resultImageRef.current?.src) {
-                                    window.open(resultImageRef.current.src, '_blank')
-                                }
-                            }}
-                            className={`w-full h-full ${showResultImage ? 'block object-contain cursor-pointer':'hidden object-contain'}`} />
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </>

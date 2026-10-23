@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import axios from '../../../axios-config'
 import Modal from '../modal.jsx'
 import Swal from 'sweetalert2'
+import { jsPDF } from 'jspdf'
 
 function TeacherAnswerKeys(){    
     const [subject, setSubject] = useState('')
@@ -198,8 +199,284 @@ function TeacherAnswerKeys(){
         })
     }
 
+    
+    const printAnswerSheet = (exam) => {
+        console.log(exam);
+        
+        const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'letter'
+        })
+
+        const pageWidth = doc.internal.pageSize.getWidth()
+        const pageHeight = doc.internal.pageSize.getHeight()
+
+        const totalItems = Number(exam.total_items)
+
+        if (!Number.isInteger(totalItems) || totalItems < 1) {
+            Swal.fire({
+                icon: 'error',
+                text: 'Invalid number of exam items.'
+            })
+            return
+        }
+
+        const margin = 15
+        const headerY = 15
+        const questionTop = 30
+        const questionSpacing = 10
+        const bottomMargin = 15
+
+        // Three columns, similar to your reference image
+        const columns = 3
+        const columnGap = 5
+        const columnWidth =
+            (pageWidth - margin * 2 - columnGap * (columns - 1)) /
+            columns
+
+        const rowsPerColumn = Math.floor(
+            (pageHeight - questionTop - bottomMargin) /
+            questionSpacing
+        )
+
+        const questionsPerPage = rowsPerColumn * columns
+        const totalPages = Math.ceil(totalItems / questionsPerPage)
+
+        // Use the actual exam code length.
+        const examCodeLength = Math.max(
+            1,
+            String(exam.code || '').length
+        )
+
+        // Adjust this if your student IDs have a different length.
+        let studentIdLength = 8
+        if(exam.type === "ENTRANCE") studentIdLength = 9
+
+        const drawBoxes = (label, length, x, y) => {
+            doc.setFont('helvetica', 'bold')
+            doc.setFontSize(12)
+            doc.text(label, x, y + 4)
+
+            const labelWidth = doc.getTextWidth(label)
+            const boxStartX = x + labelWidth + 2
+            const boxWidth = 6
+            const boxHeight = 6
+            const boxGap = 1
+
+            for (let i = 0; i < length; i++) {
+                doc.setLineWidth(0.3)
+
+                doc.rect(
+                    boxStartX + i * (boxWidth + boxGap),
+                    y,
+                    boxWidth,
+                    boxHeight
+                )
+            }
+        }
+
+        const drawRegistrationMarkers = () => {
+        const markerSize = 7 // mm
+        const offset = 5 // mm from page edges
+
+        const positions = [
+            // Top-left
+            { x: offset, y: offset },
+
+            // Top-right
+            {
+                x: pageWidth - offset - markerSize,
+                y: offset
+            },
+
+            // Bottom-left
+            {
+                x: offset,
+                y: pageHeight - offset - markerSize
+            },
+
+            // Bottom-right
+            {
+                x: pageWidth - offset - markerSize,
+                y: pageHeight - offset - markerSize
+            }
+        ]
+
+            doc.setFillColor(0, 0, 0)
+            doc.setDrawColor(0, 0, 0)
+
+            positions.forEach(({ x, y }) => {
+                doc.rect(x, y, markerSize, markerSize, 'F')
+        })
+    }
+
+        const drawQuestion = (number, x, y) => {
+            doc.setFont('helvetica', 'normal')
+            doc.setFontSize(14)
+
+            doc.text(`${number}.`, x, y + 2.5)
+
+            const choices = ['A', 'B', 'C', 'D']
+            const bubbleStartX = x + 10
+            const bubbleGap = 6
+            const radius = 2.5
+
+            choices.forEach((choice, index) => {
+                const cx = bubbleStartX + index * bubbleGap
+
+                doc.setLineWidth(0.3)
+                doc.circle(cx, y, radius, 'S')
+
+                doc.setFontSize(10)
+                doc.text(choice, cx, y + 1.1, {
+                    align: 'center'
+                })
+            })
+        }
+
+        for (let page = 0; page < totalPages; page++) {
+            if (page > 0) {
+                doc.addPage()
+            }
+
+            drawRegistrationMarkers()
+
+            // Header
+            drawBoxes(
+                'EXAM CODE',
+                examCodeLength,
+                margin,
+                headerY
+            )
+
+            if (exam.type === "ENTRANCE") {
+                drawBoxes(
+                    'APPLICANT ID',
+                    studentIdLength,
+                    pageWidth / 2,
+                    headerY
+                )
+            } else {
+                drawBoxes(
+                    'STUDENT ID',
+                    studentIdLength,
+                    pageWidth / 2,
+                    headerY
+                )
+            }
+            
+
+            // Questions
+            const firstQuestion = page * questionsPerPage + 1
+            const lastQuestion = Math.min(
+                totalItems,
+                firstQuestion + questionsPerPage - 1
+            )
+
+            for (
+                let question = firstQuestion;
+                question <= lastQuestion;
+                question++
+            ) {
+                const index = question - firstQuestion
+
+                // Fill each column from top to bottom.
+                const column = Math.floor(index / rowsPerColumn)
+                const row = index % rowsPerColumn
+
+                const x =
+                    margin + column * (columnWidth + columnGap)
+
+                const y = questionTop + row * questionSpacing
+
+                drawQuestion(question, x, y)
+            }
+
+            // Footer
+            // doc.setFontSize(7)
+            // doc.text(
+            //     `Page ${page + 1} of ${totalPages}`,
+            //     pageWidth / 2,
+            //     pageHeight - 5,
+            //     { align: 'center' }
+            // )
+        }
+
+        const safeTitle = String(exam.title || 'Exam')
+            // eslint-disable-next-line no-control-regex
+            .replace(/[<>:"/\\|?*\x00-\x1F]/g, '_')
+            .trim()
+
+        // doc.save(`${safeTitle}-Answer-Sheet.pdf`)
+        const pdfBlob = doc.output('blob')
+        const pdfUrl = URL.createObjectURL(pdfBlob)
+
+        // Open PDF preview in a new tab
+        // const previewWindow = window.open(pdfUrl, '_blank')
+
+        // if (!previewWindow) {
+        //     URL.revokeObjectURL(pdfUrl)
+
+        //     Swal.fire({
+        //         icon: 'warning',
+        //         title: 'Preview blocked',
+        //         text: 'Please allow pop-ups in your browser to preview the PDF.'
+        //     })
+        //     return
+        // }
+        setPdfPreview({
+            url: pdfUrl,
+            filename: `${safeTitle}-Answer-Sheet.pdf`
+        })
+    }
+    const [pdfPreview, setPdfPreview] = useState(null)
+
     return(
         <>
+            {/* PDF PREVIEW AND DOWNLOAD MODAL */}
+            {pdfPreview && (
+                <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+                    <div className="bg-white w-full max-w-5xl h-[90vh] rounded-xl shadow-xl flex flex-col overflow-hidden">
+                        <div className="flex items-center justify-between p-4 border-b">
+                            <h2 className="font-semibold text-lg">
+                                Answer Sheet Preview
+                            </h2>
+
+                            <button
+                                onClick={() => {
+                                    URL.revokeObjectURL(pdfPreview.url)
+                                    setPdfPreview(null)
+                                }}
+                                className="cursor-pointer rounded-2xl bg-gray-800 hover:bg-gray-700 px-4 py-2 text-white hover:rounded-md duration-200 transition-all"
+                            >
+                                Close
+                            </button>
+                        </div>
+
+                        <iframe
+                            src={pdfPreview.url}
+                            title="Answer Sheet PDF Preview"
+                            className="flex-1 w-full"
+                        />
+
+                        <div className="flex justify-end gap-3 p-4 border-t">
+                            <button
+                                onClick={() => {
+                                    const link = document.createElement('a')
+                                    link.href = pdfPreview.url
+                                    link.download = pdfPreview.filename
+                                    link.click()
+                                }}
+                                className="px-5 py-2 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 cursor-pointer hover:rounded-md duration-200 transition-all"
+                            >
+                                Download PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* CREATE EXAM MODAL */}
             <Modal isOpen={isModalOpen} onClose={closeExamModal}>
                 <h2 className="text-4xl font-bold text-center pb-4">Create Exam</h2>                
@@ -214,7 +491,7 @@ function TeacherAnswerKeys(){
                     </div>
                     <div className="flex justify-between flex-wrap text-2xl">
                         <label className="font-bold">Number of Items</label>
-                        <input required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm focus:rounded-md duration-200" type="number" pattern='' value={numberOfItems} onChange={(e) => setNumberOfItems(e.target.value)} />
+                        <input required min="10" max="50" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm focus:rounded-md duration-200" type="number" pattern='' value={numberOfItems} onChange={(e) => setNumberOfItems(e.target.value)} />
                     </div>
                     <div className="flex justify-between flex-wrap text-2xl">
                         <label className="font-bold">Exam Type</label>
@@ -255,6 +532,7 @@ function TeacherAnswerKeys(){
                         type="text"
                         className="flex-1 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm focus:rounded-md transition-all duration-200"
                         placeholder="Enter correct answer"
+                        maxLength="1"
                         value={answer}
                         onChange={(e) => {
                             const newAnswers = [...answers]
@@ -292,6 +570,7 @@ function TeacherAnswerKeys(){
                     <button onClick={() => setIsModalOpen(true)}  className='cursor-pointer px-3 py-2 text-white rounded-2xl bg-blue-500 hover:bg-blue-400 font-semibold hover:rounded-md transition-all duration-200 ease-linear'> + Create Exam</button>
                 </div>
             </div>
+
             {/* SEARCH & FILTERS */}
             <div className="mt-5">
                 <input 
@@ -402,6 +681,30 @@ function TeacherAnswerKeys(){
                                 </td>
                                 <td className="px-6 py-4">
                                 <div className="flex justify-center items-center gap-3">
+                                    <button
+                                        type="button"
+                                        title="Print Answer Sheet"
+                                        onClick={() => printAnswerSheet(exam)}
+                                        className="text-gray-500 hover:text-blue-600 hover:-translate-y-1 duration-200 transition-all ease-linear cursor-pointer"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="24"
+                                            height="24"
+                                            fill="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path d="M19 7h-1V2H6v5H5c-1.65 0-3 1.35-3 3v7c0 1.1.9 2 2 2h2v3h12v-3h2c1.1 0 2-.9 2-2v-7c0-1.65-1.35-3-3-3M8 4h8v3H8zm8 16H8v-4h8zm4-3h-2v-3H6v3H4v-7c0-.55.45-1 1-1h14c.55 0 1 .45 1 1z" />
+                                            <path d="M14 11h4v1h-4z" />
+                                        </svg>
+                                    </button>
+                                    {/* <button title="Print Answer Sheet"
+                                    className="text-gray-500 hover:text-blue-600 hover:-translate-y-1 duration-200 transition-all ease-linear">
+                                        <svg  xmlns="http://www.w3.org/2000/svg" width="24" height="24"  
+                                            fill="currentColor" viewBox="0 0 24 24" >
+                                            <path d="M19 7h-1V2H6v5H5c-1.65 0-3 1.35-3 3v7c0 1.1.9 2 2 2h2v3h12v-3h2c1.1 0 2-.9 2-2v-7c0-1.65-1.35-3-3-3M8 4h8v3H8zm8 16H8v-4h8zm4-3h-2v-3H6v3H4v-7c0-.55.45-1 1-1h14c.55 0 1 .45 1 1z"></path><path d="M14 11h4v1h-4z"></path>
+                                        </svg>
+                                    </button> */}
                                     <button
                                     title="Upload Answer Key"
                                     className="text-gray-500 hover:text-blue-600 hover:-translate-y-1 duration-200 transition-all ease-linear"
